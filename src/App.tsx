@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Team from "./pages/Team";
-import Training from "./pages/Training";
+import TrainingPage from "./pages/Training";
 import History from "./pages/History";
 import CalendarPage from "./pages/CalendarPage";
 import Statistics from "./pages/Statistics";
@@ -24,7 +24,7 @@ const App = () => (
           <Route path="/" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/team" element={<Team />} />
-          <Route path="/training" element={<Training />} />
+          <Route path="/training" element={<TrainingPage />} />
           <Route path="/history" element={<History />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/statistics" element={<Statistics />} />
