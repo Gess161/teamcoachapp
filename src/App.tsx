@@ -25,7 +25,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <HashRouter basename="/teamcoachapp">
+        <HashRouter>
           <Routes>
             <Route path="/" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
