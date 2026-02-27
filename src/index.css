@@ -2,10 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 @layer base {
   :root {
+    /* Light mode colors (default) */
+    --background: 0 0% 100%;
+    --foreground: 220 13% 14%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 220 13% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 14%;
+
+    --primary: 84 81% 44%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 90%;
+    --secondary-foreground: 220 13% 14%;
+
+    --muted: 220 13% 70%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 84 60% 35%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 88%;
+    --input: 220 14% 92%;
+    --ring: 84 81% 44%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 14% 95%;
+    --sidebar-foreground: 220 13% 14%;
+    --sidebar-primary: 84 81% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 88%;
+    --sidebar-accent-foreground: 220 13% 14%;
+    --sidebar-border: 220 15% 88%;
+    --sidebar-ring: 84 81% 44%;
+
+    --chart-1: 84 81% 44%;
+    --chart-2: 200 70% 50%;
+    --chart-3: 340 75% 55%;
+    --chart-4: 45 90% 55%;
+    --chart-5: 160 60% 45%;
+
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(84, 81%, 44%),
+      hsl(84, 60%, 35%)
+    );
+    --gradient-card: linear-gradient(
+      180deg,
+      hsl(0, 0%, 100%) 0%,
+      hsl(220, 14%, 95%) 100%
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(0, 0%, 100%) 0%,
+      hsl(220, 14%, 98%) 50%,
+      hsl(0, 0%, 100%) 100%
+    );
+
+    --shadow-glow: 0 0 20px hsl(84, 81%, 44%, 0.15);
+    --shadow-card: 0 4px 24px hsl(0, 0%, 0%, 0.08);
+
+    --font-display: "Space Grotesk", sans-serif;
+    --font-body: "Inter", sans-serif;
+  }
+
+  /* Dark mode colors - override when .dark class is present */
+  html.dark {
     --background: 220 20% 7%;
     --foreground: 0 0% 95%;
 
@@ -34,8 +106,6 @@
     --input: 220 14% 18%;
     --ring: 84 81% 44%;
 
-    --radius: 0.75rem;
-
     --sidebar-background: 220 20% 9%;
     --sidebar-foreground: 0 0% 80%;
     --sidebar-primary: 84 81% 44%;
@@ -51,15 +121,25 @@
     --chart-4: 45 90% 55%;
     --chart-5: 160 60% 45%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(84, 81%, 44%), hsl(84, 60%, 35%));
-    --gradient-card: linear-gradient(180deg, hsl(220, 18%, 13%) 0%, hsl(220, 18%, 9%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(220, 20%, 7%) 0%, hsl(220, 25%, 12%) 50%, hsl(220, 20%, 7%) 100%);
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(84, 81%, 44%),
+      hsl(84, 60%, 35%)
+    );
+    --gradient-card: linear-gradient(
+      180deg,
+      hsl(220, 18%, 13%) 0%,
+      hsl(220, 18%, 9%) 100%
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(220, 20%, 7%) 0%,
+      hsl(220, 25%, 12%) 50%,
+      hsl(220, 20%, 7%) 100%
+    );
 
     --shadow-glow: 0 0 20px hsl(84, 81%, 44%, 0.15);
     --shadow-card: 0 4px 24px hsl(0, 0%, 0%, 0.3);
-
-    --font-display: 'Space Grotesk', sans-serif;
-    --font-body: 'Inter', sans-serif;
   }
 }
 
@@ -73,7 +153,12 @@
     font-family: var(--font-body);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
   }
 }
@@ -91,7 +176,11 @@
 
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(84, 81%, 50%), hsl(84, 60%, 65%));
+    background-image: linear-gradient(
+      135deg,
+      hsl(84, 81%, 50%),
+      hsl(84, 60%, 65%)
+    );
   }
 
   .animate-fade-up {
