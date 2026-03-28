@@ -11,6 +11,8 @@ import TrainingPage from "./pages/Training";
 import History from "./pages/History";
 import CalendarPage from "./pages/CalendarPage";
 import Statistics from "./pages/Statistics";
+import TestsPage from "./pages/TestsPage";
+import LearnPage from "./pages/LearnPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/history" element={<History />} />
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/statistics" element={<Statistics />} />
+            <Route path="/tests" element={<TestsPage />} />
+            <Route path="/learn" element={<LearnPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>

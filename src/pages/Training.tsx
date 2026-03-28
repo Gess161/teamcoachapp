@@ -1,246 +1,209 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plus,
-  Play,
-  CheckCircle2,
-  X,
-  ClipboardList,
-  Dumbbell,
-  Star,
-  Trash2,
-  GripVertical,
-  ListChecks,
+  Plus, Play, CheckCircle2, X, ClipboardList, Dumbbell, Star, Trash2, ListChecks,
 } from "lucide-react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
-import {
-  storage,
-  type Training,
-  type Exercise,
-  type EvaluationCriterion,
-} from "@/lib/storage";
 
-const trainingTypes = {
-  strength: { label: "Силове", color: "bg-chart-1/10 text-chart-1" },
-  speed: { label: "Швидкісне", color: "bg-chart-4/10 text-chart-4" },
-  endurance: { label: "Витривалість", color: "bg-chart-2/10 text-chart-2" },
-  technique: { label: "Техніка", color: "bg-chart-5/10 text-chart-5" },
-  recovery: { label: "Відновлення", color: "bg-chart-3/10 text-chart-3" },
-  mixed: { label: "Змішане", color: "bg-muted text-muted-foreground" },
+type TrainingType = "strength" | "speed" | "endurance" | "technique" | "recovery" | "mixed" | "tactical" | "competition";
+type LoadLevel = "В" | "ЗН" | "С" | "М";
+type PreparationType = "ЗФП" | "СФП" | "Технічна" | "Тактична" | "Психологічна" | "Теоретична" | "Змішана";
+
+interface Criterion {
+  id: string;
+  name: string;
+  description?: string;
+  scale: string;
+  weight: number;
+}
+
+interface Exercise {
+  id: string;
+  name: string;
+  description?: string;
+  sets: number;
+  reps: string;
+  restSeconds: number;
+  criteria: Criterion[];
+}
+
+const trainingTypes: Record<TrainingType, { label: string; color: string }> = {
+  strength:    { label: "Силове",      color: "bg-chart-1/10 text-chart-1" },
+  speed:       { label: "Швидкісне",   color: "bg-chart-4/10 text-chart-4" },
+  endurance:   { label: "Витривалість", color: "bg-chart-2/10 text-chart-2" },
+  technique:   { label: "Техніка",     color: "bg-chart-5/10 text-chart-5" },
+  recovery:    { label: "Відновлення", color: "bg-chart-3/10 text-chart-3" },
+  mixed:       { label: "Змішане",     color: "bg-muted text-muted-foreground" },
+  tactical:    { label: "Тактичне",    color: "bg-chart-4/20 text-chart-4" },
+  competition: { label: "Змагання",    color: "bg-primary/10 text-primary" },
 };
 
 const statusMap = {
-  planned: { label: "Заплановано", color: "bg-chart-2/10 text-chart-2" },
-  in_progress: { label: "В процесі", color: "bg-chart-4/10 text-chart-4" },
-  completed: { label: "Завершено", color: "bg-primary/10 text-primary" },
+  planned:     { label: "Заплановано", color: "bg-chart-2/10 text-chart-2" },
+  in_progress: { label: "В процесі",  color: "bg-chart-4/10 text-chart-4" },
+  completed:   { label: "Завершено",  color: "bg-primary/10 text-primary" },
 };
 
-const scaleOptions = [
-  "1-5",
-  "1-10",
-  "1-100",
-  "прохідний/непрохідний",
-  "час (с)",
-  "відстань (м)",
-  "вага (кг)",
+const scaleOptions = ["1-5", "1-10", "1-100", "прохідний/непрохідний", "час (с)", "відстань (м)", "вага (кг)"];
+
+const preparationTypes: PreparationType[] = ["ЗФП", "СФП", "Технічна", "Тактична", "Психологічна", "Теоретична", "Змішана"];
+const loadLevels: { value: LoadLevel; label: string }[] = [
+  { value: "В",  label: "Великі (В)" },
+  { value: "ЗН", label: "Значні (ЗН)" },
+  { value: "С",  label: "Середні (С)" },
+  { value: "М",  label: "Малі (М)" },
 ];
 
 const TrainingPage = () => {
-  const [trainings, setTrainings] = useState<Training[]>(
-    storage.getTrainings()
-  );
+  const trainings = useQuery(api.trainings.getAll) ?? [];
+  const createTraining = useMutation(api.trainings.create);
+  const updateTraining = useMutation(api.trainings.update);
+  const updateStatus = useMutation(api.trainings.updateStatus);
+  const removeTraining = useMutation(api.trainings.remove);
+
+  const [selectedId, setSelectedId] = useState<Id<"trainings"> | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [showCriteriaModal, setShowCriteriaModal] = useState<{
-    trainingId: string;
-    exerciseId?: string;
-  } | null>(null);
-  const [selectedTraining, setSelectedTraining] = useState<Training | null>(
-    null,
-  );
+  const [showCriteriaModal, setShowCriteriaModal] = useState<{ trainingId: Id<"trainings">; exerciseId?: string } | null>(null);
+
   const [newTraining, setNewTraining] = useState({
-    name: "",
-    date: "",
-    description: "",
-    type: "mixed" as Training["type"],
+    name: "", date: "", description: "",
+    type: "mixed" as TrainingType,
+    preparationType: "ЗФП" as PreparationType,
+    loadLevel: "С" as LoadLevel,
   });
-  const [newExercise, setNewExercise] = useState({
-    name: "",
-    description: "",
-    sets: "",
-    reps: "",
-    restSeconds: "",
-  });
-  const [newCriterion, setNewCriterion] = useState({
-    name: "",
-    description: "",
-    scale: "1-10",
-    weight: "3",
-  });
+  const [newExercise, setNewExercise] = useState({ name: "", description: "", sets: "", reps: "", restSeconds: "" });
+  const [newCriterion, setNewCriterion] = useState({ name: "", description: "", scale: "1-10", weight: "3" });
+
   const { toast } = useToast();
 
-  // Keep selectedTraining in sync with trainings state
-  const syncedSelectedTraining = selectedTraining
-    ? trainings.find((t) => t.id === selectedTraining.id) || null
-    : null;
+  const selectedTraining = selectedId ? trainings.find((t) => t._id === selectedId) ?? null : null;
 
-  useEffect(() => {
-    storage.setTrainings(trainings);
-  }, [trainings]);
-
-  const handleCreateTraining = () => {
+  // ── Create training ──────────────────────────────────────────────────────
+  const handleCreate = async () => {
     if (!newTraining.name || !newTraining.date) return;
-    const t: Training = {
-      id: Date.now().toString(),
+    const id = await createTraining({
       name: newTraining.name,
       date: newTraining.date,
-      description: newTraining.description,
+      description: newTraining.description || undefined,
       type: newTraining.type,
+      preparationType: newTraining.preparationType,
+      loadLevel: newTraining.loadLevel,
       exercises: [],
-      status: "planned",
-      athleteCount: 0,
       globalCriteria: [],
-    };
-    setTrainings((prev) => [t, ...prev]);
-    setNewTraining({ name: "", date: "", description: "", type: "mixed" });
+      athleteIds: [],
+    });
+    setNewTraining({ name: "", date: "", description: "", type: "mixed", preparationType: "ЗФП", loadLevel: "С" });
     setShowModal(false);
-    toast({ title: "Тренування створено", description: t.name });
+    setSelectedId(id);
+    toast({ title: "Тренування створено", description: newTraining.name });
   };
 
-  const addExerciseToTraining = (trainingId: string) => {
+  // ── Add exercise ─────────────────────────────────────────────────────────
+  const addExercise = async (trainingId: Id<"trainings">) => {
     if (!newExercise.name) return;
+    const training = trainings.find((t) => t._id === trainingId);
+    if (!training) return;
     const ex: Exercise = {
       id: Date.now().toString(),
       name: newExercise.name,
-      description: newExercise.description,
+      description: newExercise.description || undefined,
       sets: Number(newExercise.sets) || 3,
       reps: newExercise.reps || "10",
       restSeconds: Number(newExercise.restSeconds) || 60,
       criteria: [],
     };
-    setTrainings((prev) =>
-      prev.map((t) =>
-        t.id === trainingId ? { ...t, exercises: [...t.exercises, ex] } : t,
-      ),
-    );
-    setNewExercise({
-      name: "",
-      description: "",
-      sets: "",
-      reps: "",
-      restSeconds: "",
-    });
+    await updateTraining({ id: trainingId, exercises: [...training.exercises, ex] });
+    setNewExercise({ name: "", description: "", sets: "", reps: "", restSeconds: "" });
     toast({ title: "Вправу додано" });
   };
 
-  const removeExercise = (trainingId: string, exerciseId: string) => {
-    setTrainings((prev) =>
-      prev.map((t) =>
-        t.id === trainingId
-          ? { ...t, exercises: t.exercises.filter((e) => e.id !== exerciseId) }
-          : t,
-      ),
-    );
+  // ── Remove exercise ──────────────────────────────────────────────────────
+  const removeExercise = async (trainingId: Id<"trainings">, exerciseId: string) => {
+    const training = trainings.find((t) => t._id === trainingId);
+    if (!training) return;
+    await updateTraining({
+      id: trainingId,
+      exercises: training.exercises.filter((e) => e.id !== exerciseId),
+    });
   };
 
-  const addCriterion = () => {
+  // ── Add criterion ─────────────────────────────────────────────────────────
+  const addCriterion = async () => {
     if (!newCriterion.name || !showCriteriaModal) return;
-    const criterion: EvaluationCriterion = {
+    const training = trainings.find((t) => t._id === showCriteriaModal.trainingId);
+    if (!training) return;
+
+    const criterion: Criterion = {
       id: Date.now().toString(),
       name: newCriterion.name,
-      description: newCriterion.description,
+      description: newCriterion.description || undefined,
       scale: newCriterion.scale,
       weight: Number(newCriterion.weight) || 3,
     };
-    setTrainings((prev) =>
-      prev.map((t) => {
-        if (t.id !== showCriteriaModal.trainingId) return t;
-        if (showCriteriaModal.exerciseId) {
-          return {
-            ...t,
-            exercises: t.exercises.map((e) =>
-              e.id === showCriteriaModal.exerciseId
-                ? { ...e, criteria: [...e.criteria, criterion] }
-                : e,
-            ),
-          };
-        }
-        return { ...t, globalCriteria: [...t.globalCriteria, criterion] };
-      }),
-    );
+
+    if (showCriteriaModal.exerciseId) {
+      await updateTraining({
+        id: showCriteriaModal.trainingId,
+        exercises: training.exercises.map((e) =>
+          e.id === showCriteriaModal.exerciseId
+            ? { ...e, criteria: [...e.criteria, criterion] }
+            : e
+        ),
+      });
+    } else {
+      await updateTraining({
+        id: showCriteriaModal.trainingId,
+        globalCriteria: [...training.globalCriteria, criterion],
+      });
+    }
     setNewCriterion({ name: "", description: "", scale: "1-10", weight: "3" });
     toast({ title: "Критерій додано" });
   };
 
-  const removeCriterion = (
-    trainingId: string,
-    criterionId: string,
-    exerciseId?: string,
-  ) => {
-    setTrainings((prev) =>
-      prev.map((t) => {
-        if (t.id !== trainingId) return t;
-        if (exerciseId) {
-          return {
-            ...t,
-            exercises: t.exercises.map((e) =>
-              e.id === exerciseId
-                ? {
-                    ...e,
-                    criteria: e.criteria.filter((c) => c.id !== criterionId),
-                  }
-                : e,
-            ),
-          };
-        }
-        return {
-          ...t,
-          globalCriteria: t.globalCriteria.filter((c) => c.id !== criterionId),
-        };
-      }),
-    );
+  // ── Remove criterion ──────────────────────────────────────────────────────
+  const removeCriterion = async (trainingId: Id<"trainings">, criterionId: string, exerciseId?: string) => {
+    const training = trainings.find((t) => t._id === trainingId);
+    if (!training) return;
+    if (exerciseId) {
+      await updateTraining({
+        id: trainingId,
+        exercises: training.exercises.map((e) =>
+          e.id === exerciseId ? { ...e, criteria: e.criteria.filter((c) => c.id !== criterionId) } : e
+        ),
+      });
+    } else {
+      await updateTraining({ id: trainingId, globalCriteria: training.globalCriteria.filter((c) => c.id !== criterionId) });
+    }
   };
 
-  const startTraining = (id: string) => {
-    setTrainings((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, status: "in_progress" as const } : t,
-      ),
-    );
-    toast({ title: "Тренування розпочато! 💪" });
+  // ── Status changes ────────────────────────────────────────────────────────
+  const startTraining = async (id: Id<"trainings">) => {
+    await updateStatus({ id, status: "in_progress" });
+    toast({ title: "Тренування розпочато!" });
   };
 
-  const completeTraining = (id: string) => {
-    setTrainings((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, status: "completed" as const } : t,
-      ),
-    );
+  const completeTraining = async (id: Id<"trainings">) => {
+    await updateStatus({ id, status: "completed" });
     toast({ title: "Тренування завершено! ✅" });
   };
 
   return (
     <DashboardLayout>
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
-      >
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold">Тренування</h1>
-            <p className="text-muted-foreground mt-1">
-              Створюйте, оцінюйте та проводьте тренування
-            </p>
+            <p className="text-muted-foreground mt-1">Створюйте, оцінюйте та проводьте тренування</p>
           </div>
-          <Button
-            onClick={() => setShowModal(true)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-          >
+          <Button onClick={() => setShowModal(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
             <Plus className="w-4 h-4" /> Нове тренування
           </Button>
         </div>
@@ -251,68 +214,79 @@ const TrainingPage = () => {
             <h2 className="font-display font-semibold text-lg flex items-center gap-2">
               <ClipboardList className="w-5 h-5 text-primary" /> Всі тренування
             </h2>
+            {trainings.length === 0 && (
+              <div className="glass-card p-12 text-center text-muted-foreground">
+                <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>Немає тренувань. Створіть перше!</p>
+              </div>
+            )}
             {trainings.map((t) => (
               <motion.div
-                key={t.id}
-                layout
-                className={`glass-card p-5 space-y-3 cursor-pointer transition-all duration-300 ${syncedSelectedTraining?.id === t.id ? "glow-border" : "hover:border-border"}`}
-                onClick={() => setSelectedTraining(t)}
+                key={t._id} layout
+                className={`glass-card p-5 space-y-3 cursor-pointer transition-all duration-300 ${selectedTraining?._id === t._id ? "glow-border" : "hover:border-border"}`}
+                onClick={() => setSelectedId(t._id)}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold">{t.name}</h3>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${trainingTypes[t.type].color}`}
-                    >
-                      {trainingTypes[t.type].label}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${trainingTypes[t.type as TrainingType]?.color ?? ""}`}>
+                      {trainingTypes[t.type as TrainingType]?.label}
                     </span>
+                    {t.preparationType && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-secondary text-muted-foreground">
+                        {t.preparationType}
+                      </span>
+                    )}
+                    {t.loadLevel && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-chart-4/10 text-chart-4">
+                        {t.loadLevel}
+                      </span>
+                    )}
                   </div>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-md font-medium ${statusMap[t.status].color}`}
-                  >
+                  <span className={`text-xs px-2 py-1 rounded-md font-medium ${statusMap[t.status].color}`}>
                     {statusMap[t.status].label}
                   </span>
                 </div>
+
                 {t.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-1">
-                    {t.description}
-                  </p>
+                  <p className="text-xs text-muted-foreground line-clamp-1">{t.description}</p>
                 )}
+
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span>{t.date}</span>
                   <span>{t.exercises.length} вправ</span>
-                  <span>{t.athleteCount} спортсменів</span>
-                  {(t.globalCriteria.length > 0 ||
-                    t.exercises.some((e) => e.criteria.length > 0)) && (
-                    <span className="flex items-center gap-1">
-                      <ListChecks className="w-3 h-3" /> критерії
-                    </span>
+                  <span>{t.athleteIds.length} спортсменів</span>
+                  {(t.globalCriteria.length > 0 || t.exercises.some((e) => e.criteria.length > 0)) && (
+                    <span className="flex items-center gap-1"><ListChecks className="w-3 h-3" /> критерії</span>
                   )}
                 </div>
-                {t.status === "planned" && (
-                  <Button
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startTraining(t.id);
-                    }}
-                    className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
+
+                <div className="flex gap-2">
+                  {t.status === "planned" && (
+                    <Button
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); startTraining(t._id); }}
+                      className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      <Play className="w-3 h-3" /> Розпочати
+                    </Button>
+                  )}
+                  {t.status === "in_progress" && (
+                    <Button
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); completeTraining(t._id); }}
+                      className="gap-1 bg-chart-4/20 text-chart-4 hover:bg-chart-4/30 border-0"
+                    >
+                      <CheckCircle2 className="w-3 h-3" /> Завершити
+                    </Button>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeTraining({ id: t._id }); }}
+                    className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors ml-auto"
                   >
-                    <Play className="w-3 h-3" /> Розпочати
-                  </Button>
-                )}
-                {t.status === "in_progress" && (
-                  <Button
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      completeTraining(t.id);
-                    }}
-                    className="gap-1 bg-chart-4/20 text-chart-4 hover:bg-chart-4/30 border-0"
-                  >
-                    <CheckCircle2 className="w-3 h-3" /> Завершити
-                  </Button>
-                )}
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -322,65 +296,49 @@ const TrainingPage = () => {
             <h2 className="font-display font-semibold text-lg flex items-center gap-2">
               <Dumbbell className="w-5 h-5 text-primary" /> Деталі тренування
             </h2>
-            {syncedSelectedTraining ? (
+            {selectedTraining ? (
               <div className="space-y-4">
                 <div className="glass-card p-5 space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-lg">
-                      {syncedSelectedTraining.name}
-                    </h3>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-md font-medium ${trainingTypes[syncedSelectedTraining.type].color}`}
-                    >
-                      {trainingTypes[syncedSelectedTraining.type].label}
+                    <h3 className="font-semibold text-lg">{selectedTraining.name}</h3>
+                    <span className={`text-xs px-2 py-1 rounded-md font-medium ${trainingTypes[selectedTraining.type as TrainingType]?.color}`}>
+                      {trainingTypes[selectedTraining.type as TrainingType]?.label}
                     </span>
                   </div>
-                  {syncedSelectedTraining.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {syncedSelectedTraining.description}
-                    </p>
+                  {selectedTraining.description && (
+                    <p className="text-sm text-muted-foreground">{selectedTraining.description}</p>
                   )}
 
                   {/* Global Criteria */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium flex items-center gap-1.5">
-                        <Star className="w-4 h-4 text-chart-4" /> Критерії
-                        оцінювання тренування
+                        <Star className="w-4 h-4 text-chart-4" /> Критерії оцінювання
                       </p>
                       <Button
-                        size="sm"
-                        variant="ghost"
+                        size="sm" variant="ghost"
                         className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
-                        onClick={() =>
-                          setShowCriteriaModal({
-                            trainingId: syncedSelectedTraining.id,
-                          })
-                        }
+                        onClick={() => setShowCriteriaModal({ trainingId: selectedTraining._id })}
                       >
                         <Plus className="w-3 h-3" /> Додати
                       </Button>
                     </div>
-                    {syncedSelectedTraining.globalCriteria.map((c) => (
+                    {selectedTraining.globalCriteria.map((c) => (
                       <CriterionBadge
                         key={c.id}
                         criterion={c}
-                        onRemove={() =>
-                          removeCriterion(syncedSelectedTraining.id, c.id)
-                        }
+                        onRemove={() => removeCriterion(selectedTraining._id, c.id)}
                       />
                     ))}
-                    {syncedSelectedTraining.globalCriteria.length === 0 && (
-                      <p className="text-xs text-muted-foreground italic">
-                        Критерії не задані
-                      </p>
+                    {selectedTraining.globalCriteria.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic">Критерії не задані</p>
                     )}
                   </div>
                 </div>
 
                 {/* Exercises */}
                 <div className="space-y-3">
-                  {syncedSelectedTraining.exercises.map((ex, i) => (
+                  {selectedTraining.exercises.map((ex, i) => (
                     <div key={ex.id} className="glass-card p-4 space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -389,19 +347,13 @@ const TrainingPage = () => {
                           </span>
                           <div>
                             <p className="font-medium text-sm">{ex.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {ex.description}
-                            </p>
+                            {ex.description && <p className="text-xs text-muted-foreground">{ex.description}</p>}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <p className="text-xs text-muted-foreground font-mono">
-                            {ex.sets}×{ex.reps} · {ex.restSeconds}с відп.
-                          </p>
+                          <p className="text-xs text-muted-foreground font-mono">{ex.sets}×{ex.reps} · {ex.restSeconds}с відп.</p>
                           <button
-                            onClick={() =>
-                              removeExercise(syncedSelectedTraining.id, ex.id)
-                            }
+                            onClick={() => removeExercise(selectedTraining._id, ex.id)}
                             className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -412,41 +364,23 @@ const TrainingPage = () => {
                       {/* Exercise Criteria */}
                       <div className="pl-10 space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
-                            Критерії вправи
-                          </p>
+                          <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Критерії вправи</p>
                           <Button
-                            size="sm"
-                            variant="ghost"
+                            size="sm" variant="ghost"
                             className="h-6 text-[10px] gap-0.5 text-muted-foreground hover:text-foreground px-2"
-                            onClick={() =>
-                              setShowCriteriaModal({
-                                trainingId: syncedSelectedTraining.id,
-                                exerciseId: ex.id,
-                              })
-                            }
+                            onClick={() => setShowCriteriaModal({ trainingId: selectedTraining._id, exerciseId: ex.id })}
                           >
                             <Plus className="w-2.5 h-2.5" /> Критерій
                           </Button>
                         </div>
                         {ex.criteria.map((c) => (
                           <CriterionBadge
-                            key={c.id}
-                            criterion={c}
-                            compact
-                            onRemove={() =>
-                              removeCriterion(
-                                syncedSelectedTraining.id,
-                                c.id,
-                                ex.id,
-                              )
-                            }
+                            key={c.id} criterion={c} compact
+                            onRemove={() => removeCriterion(selectedTraining._id, c.id, ex.id)}
                           />
                         ))}
                         {ex.criteria.length === 0 && (
-                          <p className="text-[11px] text-muted-foreground/60 italic">
-                            Без критеріїв
-                          </p>
+                          <p className="text-[11px] text-muted-foreground/60 italic">Без критеріїв</p>
                         )}
                       </div>
                     </div>
@@ -455,67 +389,16 @@ const TrainingPage = () => {
 
                 {/* Add Exercise */}
                 <div className="glass-card p-4 space-y-3">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Додати вправу
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">Додати вправу</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      placeholder="Назва"
-                      value={newExercise.name}
-                      onChange={(e) =>
-                        setNewExercise({ ...newExercise, name: e.target.value })
-                      }
-                      className="bg-secondary/50 border-border/50 text-sm"
-                    />
-                    <Input
-                      placeholder="Опис"
-                      value={newExercise.description}
-                      onChange={(e) =>
-                        setNewExercise({
-                          ...newExercise,
-                          description: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50 text-sm"
-                    />
-                    <Input
-                      placeholder="Підходи"
-                      type="number"
-                      value={newExercise.sets}
-                      onChange={(e) =>
-                        setNewExercise({ ...newExercise, sets: e.target.value })
-                      }
-                      className="bg-secondary/50 border-border/50 text-sm"
-                    />
-                    <Input
-                      placeholder="Повтори/дистанція"
-                      value={newExercise.reps}
-                      onChange={(e) =>
-                        setNewExercise({ ...newExercise, reps: e.target.value })
-                      }
-                      className="bg-secondary/50 border-border/50 text-sm"
-                    />
-                    <Input
-                      placeholder="Відпочинок (сек)"
-                      type="number"
-                      value={newExercise.restSeconds}
-                      onChange={(e) =>
-                        setNewExercise({
-                          ...newExercise,
-                          restSeconds: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50 text-sm col-span-2"
-                    />
+                    <Input placeholder="Назва" value={newExercise.name} onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })} className="bg-secondary/50 border-border/50 text-sm" />
+                    <Input placeholder="Опис" value={newExercise.description} onChange={(e) => setNewExercise({ ...newExercise, description: e.target.value })} className="bg-secondary/50 border-border/50 text-sm" />
+                    <Input placeholder="Підходи" type="number" value={newExercise.sets} onChange={(e) => setNewExercise({ ...newExercise, sets: e.target.value })} className="bg-secondary/50 border-border/50 text-sm" />
+                    <Input placeholder="Повтори/дистанція" value={newExercise.reps} onChange={(e) => setNewExercise({ ...newExercise, reps: e.target.value })} className="bg-secondary/50 border-border/50 text-sm" />
+                    <Input placeholder="Відпочинок (сек)" type="number" value={newExercise.restSeconds} onChange={(e) => setNewExercise({ ...newExercise, restSeconds: e.target.value })} className="bg-secondary/50 border-border/50 text-sm col-span-2" />
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      addExerciseToTraining(syncedSelectedTraining.id)
-                    }
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 gap-1"
-                  >
-                    <Plus className="w-3 h-3" /> Додати
+                  <Button size="sm" onClick={() => addExercise(selectedTraining._id)} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-1">
+                    <Plus className="w-3 h-3" /> Додати вправу
                   </Button>
                 </div>
               </div>
@@ -532,107 +415,58 @@ const TrainingPage = () => {
         <AnimatePresence>
           {showModal && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
               onClick={() => setShowModal(false)}
             >
               <motion.div
-                initial={{ scale: 0.95 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.95 }}
+                initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
                 className="glass-card p-6 w-full max-w-md space-y-5"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between">
-                  <h2 className="font-display font-bold text-xl">
-                    Нове тренування
-                  </h2>
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
+                  <h2 className="font-display font-bold text-xl">Нове тренування</h2>
+                  <button onClick={() => setShowModal(false)} className="text-muted-foreground hover:text-foreground">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-muted-foreground">
-                      Назва
-                    </Label>
-                    <Input
-                      placeholder="Силове тренування"
-                      value={newTraining.name}
-                      onChange={(e) =>
-                        setNewTraining({ ...newTraining, name: e.target.value })
-                      }
-                      className="bg-secondary/50 border-border/50"
-                    />
+                    <Label className="text-sm text-muted-foreground">Назва</Label>
+                    <Input placeholder="Силове тренування" value={newTraining.name} onChange={(e) => setNewTraining({ ...newTraining, name: e.target.value })} className="bg-secondary/50 border-border/50" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-sm text-muted-foreground">Тип</Label>
+                      <select value={newTraining.type} onChange={(e) => setNewTraining({ ...newTraining, type: e.target.value as TrainingType })} className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground">
+                        {Object.entries(trainingTypes).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-sm text-muted-foreground">Навантаження</Label>
+                      <select value={newTraining.loadLevel} onChange={(e) => setNewTraining({ ...newTraining, loadLevel: e.target.value as LoadLevel })} className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground">
+                        {loadLevels.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+                      </select>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-muted-foreground">Тип</Label>
-                    <select
-                      value={newTraining.type}
-                      onChange={(e) =>
-                        setNewTraining({
-                          ...newTraining,
-                          type: e.target.value as Training["type"],
-                        })
-                      }
-                      className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground"
-                    >
-                      {Object.entries(trainingTypes).map(([k, v]) => (
-                        <option key={k} value={k}>
-                          {v.label}
-                        </option>
-                      ))}
+                    <Label className="text-sm text-muted-foreground">Вид підготовки (Платонов)</Label>
+                    <select value={newTraining.preparationType} onChange={(e) => setNewTraining({ ...newTraining, preparationType: e.target.value as PreparationType })} className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground">
+                      {preparationTypes.map((p) => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-muted-foreground">
-                      Дата
-                    </Label>
-                    <Input
-                      type="date"
-                      value={newTraining.date}
-                      onChange={(e) =>
-                        setNewTraining({ ...newTraining, date: e.target.value })
-                      }
-                      className="bg-secondary/50 border-border/50"
-                    />
+                    <Label className="text-sm text-muted-foreground">Дата</Label>
+                    <Input type="date" value={newTraining.date} onChange={(e) => setNewTraining({ ...newTraining, date: e.target.value })} className="bg-secondary/50 border-border/50" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-muted-foreground">
-                      Опис
-                    </Label>
-                    <Textarea
-                      placeholder="Опис тренування..."
-                      value={newTraining.description}
-                      onChange={(e) =>
-                        setNewTraining({
-                          ...newTraining,
-                          description: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50 min-h-[60px]"
-                    />
+                    <Label className="text-sm text-muted-foreground">Опис</Label>
+                    <Textarea placeholder="Опис тренування..." value={newTraining.description} onChange={(e) => setNewTraining({ ...newTraining, description: e.target.value })} className="bg-secondary/50 border-border/50 min-h-[60px]" />
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowModal(false)}
-                    className="flex-1"
-                  >
-                    Скасувати
-                  </Button>
-                  <Button
-                    onClick={handleCreateTraining}
-                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    Створити
-                  </Button>
+                  <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1">Скасувати</Button>
+                  <Button onClick={handleCreate} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Створити</Button>
                 </div>
               </motion.div>
             </motion.div>
@@ -643,125 +477,51 @@ const TrainingPage = () => {
         <AnimatePresence>
           {showCriteriaModal && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
               onClick={() => setShowCriteriaModal(null)}
             >
               <motion.div
-                initial={{ scale: 0.95 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.95 }}
+                initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
                 className="glass-card p-6 w-full max-w-md space-y-5"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between">
                   <h2 className="font-display font-bold text-xl flex items-center gap-2">
-                    <Star className="w-5 h-5 text-chart-4" />
-                    Новий критерій
+                    <Star className="w-5 h-5 text-chart-4" /> Новий критерій
                   </h2>
-                  <button
-                    onClick={() => setShowCriteriaModal(null)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
+                  <button onClick={() => setShowCriteriaModal(null)} className="text-muted-foreground hover:text-foreground">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {showCriteriaModal.exerciseId
-                    ? "Критерій для конкретної вправи"
-                    : "Загальний критерій тренування"}
+                  {showCriteriaModal.exerciseId ? "Критерій для конкретної вправи" : "Загальний критерій тренування"}
                 </p>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-muted-foreground">
-                      Назва критерію
-                    </Label>
-                    <Input
-                      placeholder="Техніка виконання"
-                      value={newCriterion.name}
-                      onChange={(e) =>
-                        setNewCriterion({
-                          ...newCriterion,
-                          name: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50"
-                    />
+                    <Label className="text-sm text-muted-foreground">Назва критерію</Label>
+                    <Input placeholder="Техніка виконання" value={newCriterion.name} onChange={(e) => setNewCriterion({ ...newCriterion, name: e.target.value })} className="bg-secondary/50 border-border/50" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-muted-foreground">
-                      Опис
-                    </Label>
-                    <Textarea
-                      placeholder="Що саме оцінюється..."
-                      value={newCriterion.description}
-                      onChange={(e) =>
-                        setNewCriterion({
-                          ...newCriterion,
-                          description: e.target.value,
-                        })
-                      }
-                      className="bg-secondary/50 border-border/50 min-h-[50px]"
-                    />
+                    <Label className="text-sm text-muted-foreground">Опис</Label>
+                    <Textarea placeholder="Що саме оцінюється..." value={newCriterion.description} onChange={(e) => setNewCriterion({ ...newCriterion, description: e.target.value })} className="bg-secondary/50 border-border/50 min-h-[50px]" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-sm text-muted-foreground">
-                        Шкала
-                      </Label>
-                      <select
-                        value={newCriterion.scale}
-                        onChange={(e) =>
-                          setNewCriterion({
-                            ...newCriterion,
-                            scale: e.target.value,
-                          })
-                        }
-                        className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground"
-                      >
-                        {scaleOptions.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
+                      <Label className="text-sm text-muted-foreground">Шкала</Label>
+                      <select value={newCriterion.scale} onChange={(e) => setNewCriterion({ ...newCriterion, scale: e.target.value })} className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground">
+                        {scaleOptions.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-sm text-muted-foreground">
-                        Вага (1-5)
-                      </Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="5"
-                        value={newCriterion.weight}
-                        onChange={(e) =>
-                          setNewCriterion({
-                            ...newCriterion,
-                            weight: e.target.value,
-                          })
-                        }
-                        className="bg-secondary/50 border-border/50"
-                      />
+                      <Label className="text-sm text-muted-foreground">Вага (1-5)</Label>
+                      <Input type="number" min="1" max="5" value={newCriterion.weight} onChange={(e) => setNewCriterion({ ...newCriterion, weight: e.target.value })} className="bg-secondary/50 border-border/50" />
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowCriteriaModal(null)}
-                    className="flex-1"
-                  >
-                    Скасувати
-                  </Button>
-                  <Button
-                    onClick={addCriterion}
-                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    Додати критерій
-                  </Button>
+                  <Button variant="outline" onClick={() => setShowCriteriaModal(null)} className="flex-1">Скасувати</Button>
+                  <Button onClick={addCriterion} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Додати критерій</Button>
                 </div>
               </motion.div>
             </motion.div>
@@ -772,50 +532,26 @@ const TrainingPage = () => {
   );
 };
 
-const CriterionBadge = ({
-  criterion,
-  compact,
-  onRemove,
-}: {
-  criterion: EvaluationCriterion;
-  compact?: boolean;
-  onRemove: () => void;
-}) => (
-  <div
-    className={`flex items-center justify-between rounded-lg bg-secondary/30 group/crit ${compact ? "px-3 py-1.5" : "px-3 py-2.5"}`}
-  >
+// ─── Helper component ────────────────────────────────────────────────────────
+
+const CriterionBadge = ({ criterion, compact, onRemove }: { criterion: Criterion; compact?: boolean; onRemove: () => void }) => (
+  <div className={`flex items-center justify-between rounded-lg bg-secondary/30 group/crit ${compact ? "px-3 py-1.5" : "px-3 py-2.5"}`}>
     <div className="flex items-center gap-2 min-w-0">
       <div className="flex gap-0.5">
         {Array.from({ length: criterion.weight }).map((_, i) => (
-          <Star
-            key={i}
-            className={`${compact ? "w-2 h-2" : "w-2.5 h-2.5"} fill-chart-4 text-chart-4`}
-          />
+          <Star key={i} className={`${compact ? "w-2 h-2" : "w-2.5 h-2.5"} fill-chart-4 text-chart-4`} />
         ))}
       </div>
       <div className="min-w-0">
-        <p
-          className={`font-medium truncate ${compact ? "text-[11px]" : "text-xs"}`}
-        >
-          {criterion.name}
-        </p>
+        <p className={`font-medium truncate ${compact ? "text-[11px]" : "text-xs"}`}>{criterion.name}</p>
         {!compact && criterion.description && (
-          <p className="text-[10px] text-muted-foreground truncate">
-            {criterion.description}
-          </p>
+          <p className="text-[10px] text-muted-foreground truncate">{criterion.description}</p>
         )}
       </div>
     </div>
     <div className="flex items-center gap-2 shrink-0">
-      <span
-        className={`${compact ? "text-[10px]" : "text-[11px]"} text-muted-foreground font-mono`}
-      >
-        {criterion.scale}
-      </span>
-      <button
-        onClick={onRemove}
-        className="opacity-0 group-hover/crit:opacity-100 p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all"
-      >
+      <span className={`${compact ? "text-[10px]" : "text-[11px]"} text-muted-foreground font-mono`}>{criterion.scale}</span>
+      <button onClick={onRemove} className="opacity-0 group-hover/crit:opacity-100 p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all">
         <X className="w-3 h-3" />
       </button>
     </div>

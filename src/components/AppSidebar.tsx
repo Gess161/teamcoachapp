@@ -1,14 +1,16 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Users, Dumbbell, History, CalendarDays, BarChart3, LogOut, LayoutDashboard } from "lucide-react";
+import { Users, Dumbbell, History, CalendarDays, BarChart3, LogOut, LayoutDashboard, ClipboardCheck, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { title: "Дашборд", url: "/dashboard", icon: LayoutDashboard },
   { title: "Команда", url: "/team", icon: Users },
   { title: "Тренування", url: "/training", icon: Dumbbell },
+  { title: "Тести ДЮСШ", url: "/tests", icon: ClipboardCheck },
   { title: "Історія", url: "/history", icon: History },
   { title: "Календар", url: "/calendar", icon: CalendarDays },
   { title: "Статистика", url: "/statistics", icon: BarChart3 },
+  { title: "Навчання", url: "/learn", icon: BookOpen },
 ];
 
 export function AppSidebar() {
