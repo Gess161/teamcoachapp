@@ -1,6 +1,19 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Edit2, Trash2, X, User, ChevronRight, Activity, Calendar, Layers, Dumbbell, Save } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  X,
+  User,
+  ChevronRight,
+  Activity,
+  Calendar,
+  Layers,
+  Dumbbell,
+  Save,
+} from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -14,34 +27,140 @@ import { useToast } from "@/hooks/use-toast";
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type CyclePhase =
-  | "preparatory_general" | "preparatory_special" | "pre_competitive"
-  | "competitive" | "restorative" | "transitional";
+  | "preparatory_general"
+  | "preparatory_special"
+  | "pre_competitive"
+  | "competitive"
+  | "restorative"
+  | "transitional";
 
 const cycleLabels: Record<CyclePhase, { label: string; color: string }> = {
-  preparatory_general:  { label: "Підг. загальний",   color: "bg-blue-500/10 text-blue-400" },
-  preparatory_special:  { label: "Підг. спеціальний", color: "bg-violet-500/10 text-violet-400" },
-  pre_competitive:      { label: "Передзмагальний",   color: "bg-orange-500/10 text-orange-400" },
-  competitive:          { label: "Змагальний",         color: "bg-yellow-500/10 text-yellow-400" },
-  restorative:          { label: "Відновний",          color: "bg-green-500/10 text-green-400" },
-  transitional:         { label: "Перехідний",         color: "bg-muted text-muted-foreground" },
+  preparatory_general: {
+    label: "Підг. загальний",
+    color: "bg-blue-500/10 text-blue-400",
+  },
+  preparatory_special: {
+    label: "Підг. спеціальний",
+    color: "bg-violet-500/10 text-violet-400",
+  },
+  pre_competitive: {
+    label: "Передзмагальний",
+    color: "bg-orange-500/10 text-orange-400",
+  },
+  competitive: {
+    label: "Змагальний",
+    color: "bg-yellow-500/10 text-yellow-400",
+  },
+  restorative: { label: "Відновний", color: "bg-green-500/10 text-green-400" },
+  transitional: {
+    label: "Перехідний",
+    color: "bg-muted text-muted-foreground",
+  },
 };
 
+// 12 types of preparedness colors (from Platonov)
+const PREPAREDNESS_TYPES = [
+  { key: "physical", label: "Фізична", icon: "💪", color: "hsl(84,81%,44%)" },
+  { key: "technical", label: "Технічна", icon: "🎯", color: "hsl(45,90%,55%)" },
+  { key: "tactical", label: "Тактична", icon: "♟️", color: "hsl(200,70%,50%)" },
+  {
+    key: "psychological",
+    label: "Психологічна",
+    icon: "🧠",
+    color: "hsl(340,75%,55%)",
+  },
+  {
+    key: "theoretical",
+    label: "Теоретична",
+    icon: "📚",
+    color: "hsl(270,65%,60%)",
+  },
+  {
+    key: "functional",
+    label: "Функціональна",
+    icon: "❤️",
+    color: "hsl(0,75%,55%)",
+  },
+  {
+    key: "psychophysio",
+    label: "Психофізіологічна",
+    icon: "⚡",
+    color: "hsl(30,80%,55%)",
+  },
+  {
+    key: "cognitive",
+    label: "Когнітивна",
+    icon: "🔬",
+    color: "hsl(160,60%,45%)",
+  },
+  {
+    key: "morphofunc",
+    label: "Морфофункціональна",
+    icon: "📏",
+    color: "hsl(190,65%,45%)",
+  },
+  {
+    key: "recovery",
+    label: "Відновлювальна",
+    icon: "🔄",
+    color: "hsl(120,55%,45%)",
+  },
+  {
+    key: "coordination",
+    label: "Координаційна",
+    icon: "🤸",
+    color: "hsl(60,85%,50%)",
+  },
+  {
+    key: "integral",
+    label: "Інтегральна",
+    icon: "🏆",
+    color: "hsl(84,81%,44%)",
+  },
+] as const;
+
 type FormState = {
-  name: string; dateOfBirth: string; gender: "male" | "female"; sport: string;
-  specialization: string; qualification: string; phone: string; email: string;
-  height: string; weight: string; trainingAge: string; currentCyclePhase: CyclePhase;
-  bestResult: string; targetResult: string; injuryNotes: string; personalNotes: string;
+  name: string;
+  dateOfBirth: string;
+  gender: "male" | "female";
+  sport: string;
+  specialization: string;
+  qualification: string;
+  phone: string;
+  email: string;
+  height: string;
+  weight: string;
+  trainingAge: string;
+  currentCyclePhase: CyclePhase;
+  bestResult: string;
+  targetResult: string;
+  injuryNotes: string;
+  personalNotes: string;
 };
 
 const emptyForm: FormState = {
-  name: "", dateOfBirth: "", gender: "male", sport: "handball", specialization: "",
-  qualification: "", phone: "", email: "", height: "", weight: "", trainingAge: "",
-  currentCyclePhase: "preparatory_general", bestResult: "", targetResult: "",
-  injuryNotes: "", personalNotes: "",
+  name: "",
+  dateOfBirth: "",
+  gender: "male",
+  sport: "handball",
+  specialization: "",
+  qualification: "",
+  phone: "",
+  email: "",
+  height: "",
+  weight: "",
+  trainingAge: "",
+  currentCyclePhase: "preparatory_general",
+  bestResult: "",
+  targetResult: "",
+  injuryNotes: "",
+  personalNotes: "",
 };
 
 const getAge = (dob: string) =>
-  Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+  Math.floor(
+    (Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+  );
 
 // ─── MacroCycle Bar ──────────────────────────────────────────────────────────
 
@@ -52,10 +171,18 @@ type MacroDoc = {
   endDate: string;
   isActive: boolean;
   phases: {
-    preparatoryGeneral: { startDate: string; endDate: string; hoursPercent: number };
-    preparatorySpecial: { startDate: string; endDate: string; hoursPercent: number };
-    competitive:        { startDate: string; endDate: string; hoursPercent: number };
-    transitional:       { startDate: string; endDate: string; hoursPercent: number };
+    preparatoryGeneral: {
+      startDate: string;
+      endDate: string;
+      hoursPercent: number;
+    };
+    preparatorySpecial: {
+      startDate: string;
+      endDate: string;
+      hoursPercent: number;
+    };
+    competitive: { startDate: string; endDate: string; hoursPercent: number };
+    transitional: { startDate: string; endDate: string; hoursPercent: number };
   };
   athleteIds: Id<"athletes">[];
 };
@@ -73,13 +200,14 @@ const MacroCycleBar = ({ macro }: { macro: MacroDoc }) => {
     new Date(macro.endDate).getTime() - new Date(macro.startDate).getTime();
 
   const phases = [
-    { label: "ЗФП",   ...macro.phases.preparatoryGeneral },
-    { label: "СФП",   ...macro.phases.preparatorySpecial },
+    { label: "ЗФП", ...macro.phases.preparatoryGeneral },
+    { label: "СФП", ...macro.phases.preparatorySpecial },
     { label: "Змаг.", ...macro.phases.competitive },
-    { label: "Перех.",...macro.phases.transitional },
+    { label: "Перех.", ...macro.phases.transitional },
   ];
 
-  const todayMs = new Date(today).getTime() - new Date(macro.startDate).getTime();
+  const todayMs =
+    new Date(today).getTime() - new Date(macro.startDate).getTime();
   const todayPct = Math.max(0, Math.min(100, (todayMs / totalMs) * 100));
   const isInRange = today >= macro.startDate && today <= macro.endDate;
 
@@ -114,13 +242,98 @@ const MacroCycleBar = ({ macro }: { macro: MacroDoc }) => {
   );
 };
 
+// ─── IGS Colored Bar ─────────────────────────────────────────────────────────
+
+const IGSColorBar = ({
+  variant = "full",
+}: {
+  variant?: "full" | "compact";
+}) => {
+  // IGS components with their colors and weights
+  // ІГС = 0.4·Фізична + 0.25·Технічна + 0.2·Тактична + 0.15·Психологічна
+  const components = [
+    {
+      key: "physical",
+      label: "Фізична (40%)",
+      width: 40,
+      color:
+        PREPAREDNESS_TYPES.find((p) => p.key === "physical")?.color || "#666",
+    },
+    {
+      key: "technical",
+      label: "Технічна (25%)",
+      width: 25,
+      color:
+        PREPAREDNESS_TYPES.find((p) => p.key === "technical")?.color || "#666",
+    },
+    {
+      key: "tactical",
+      label: "Тактична (20%)",
+      width: 20,
+      color:
+        PREPAREDNESS_TYPES.find((p) => p.key === "tactical")?.color || "#666",
+    },
+    {
+      key: "psychological",
+      label: "Психологічна (15%)",
+      width: 15,
+      color:
+        PREPAREDNESS_TYPES.find((p) => p.key === "psychological")?.color ||
+        "#666",
+    },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <div className="flex h-3 rounded-full overflow-hidden bg-secondary/30">
+        {components.map((comp) => (
+          <div
+            key={comp.key}
+            style={{
+              width: `${comp.width}%`,
+              backgroundColor: comp.color,
+            }}
+            className="transition-all"
+            title={comp.label}
+          />
+        ))}
+      </div>
+      {variant === "full" && (
+        <div className="grid grid-cols-2 gap-1 text-[10px]">
+          {components.map((comp) => (
+            <div key={comp.key} className="flex items-center gap-1">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: comp.color }}
+              />
+              <span className="text-muted-foreground">{comp.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Today's Training Modal ──────────────────────────────────────────────────
 
 type TrainingDoc = {
-  _id: Id<"trainings">; name: string; date: string; status: string;
-  preparationType?: string; loadLevel?: string; athleteIds: Id<"athletes">[];
-  exercises: { id: string; name: string; sets: number; reps: string; restSeconds: number }[];
-  durationMinutes?: number; description?: string;
+  _id: Id<"trainings">;
+  name: string;
+  date: string;
+  status: string;
+  preparationType?: string;
+  loadLevel?: string;
+  athleteIds: Id<"athletes">[];
+  exercises: {
+    id: string;
+    name: string;
+    sets: number;
+    reps: string;
+    restSeconds: number;
+  }[];
+  durationMinutes?: number;
+  description?: string;
 };
 
 const PREP_TYPE_LABELS: Record<string, string> = {
@@ -155,14 +368,16 @@ const TodayTrainingModal = ({
 
   const activeTraining = useMemo(() => {
     const eligible = allTrainings
-      .filter((t) => t.athleteIds.includes(athleteId) && t.status !== "completed")
+      .filter(
+        (t) => t.athleteIds.includes(athleteId) && t.status !== "completed",
+      )
       .sort((a, b) => a.date.localeCompare(b.date));
     return eligible.find((t) => t.date === today) ?? eligible[0] ?? null;
   }, [allTrainings, athleteId, today]);
 
   const existingSession = useQuery(
     api.trainingSessions.getByAthleteAndTraining,
-    activeTraining ? { athleteId, trainingId: activeTraining._id } : "skip"
+    activeTraining ? { athleteId, trainingId: activeTraining._id } : "skip",
   );
 
   const [adjustments, setAdjustments] = useState("");
@@ -178,7 +393,9 @@ const TodayTrainingModal = ({
   }, [existingSession, initialized]);
 
   const createSession = useMutation(api.trainingSessions.create);
-  const updateSession = useMutation(api.trainingSessions.updatePersonalAdjustments);
+  const updateSession = useMutation(
+    api.trainingSessions.updatePersonalAdjustments,
+  );
   const { toast } = useToast();
 
   const handleSave = async () => {
@@ -231,7 +448,10 @@ const TodayTrainingModal = ({
               Персональний план для {athleteName}
             </p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -239,7 +459,9 @@ const TodayTrainingModal = ({
         {!activeTraining ? (
           <div className="text-center py-8 space-y-2">
             <Dumbbell className="w-12 h-12 text-muted-foreground/20 mx-auto" />
-            <p className="text-muted-foreground">Немає запланованих тренувань</p>
+            <p className="text-muted-foreground">
+              Немає запланованих тренувань
+            </p>
             <p className="text-sm text-muted-foreground/60">
               Додайте спортсмена до тренування у розділі «Тренування»
             </p>
@@ -253,7 +475,8 @@ const TodayTrainingModal = ({
                   <h3 className="font-semibold">{activeTraining.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     {activeTraining.date}
-                    {activeTraining.durationMinutes && ` · ${activeTraining.durationMinutes} хв`}
+                    {activeTraining.durationMinutes &&
+                      ` · ${activeTraining.durationMinutes} хв`}
                   </p>
                 </div>
                 {isToday && (
@@ -265,17 +488,22 @@ const TodayTrainingModal = ({
               <div className="flex gap-2 flex-wrap">
                 {activeTraining.preparationType && (
                   <span className="text-xs px-2 py-1 rounded-md bg-secondary/60">
-                    {PREP_TYPE_LABELS[activeTraining.preparationType] ?? activeTraining.preparationType}
+                    {PREP_TYPE_LABELS[activeTraining.preparationType] ??
+                      activeTraining.preparationType}
                   </span>
                 )}
                 {activeTraining.loadLevel && (
-                  <span className={`text-xs px-2 py-1 rounded-md font-medium ${LOAD_COLORS[activeTraining.loadLevel] ?? ""}`}>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-md font-medium ${LOAD_COLORS[activeTraining.loadLevel] ?? ""}`}
+                  >
                     Навантаження: {activeTraining.loadLevel}
                   </span>
                 )}
               </div>
               {activeTraining.description && (
-                <p className="text-sm text-muted-foreground">{activeTraining.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {activeTraining.description}
+                </p>
               )}
             </div>
 
@@ -287,7 +515,10 @@ const TodayTrainingModal = ({
                 </p>
                 <div className="space-y-1.5">
                   {activeTraining.exercises.map((ex, i) => (
-                    <div key={ex.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 text-sm">
+                    <div
+                      key={ex.id}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 text-sm"
+                    >
                       <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold shrink-0">
                         {i + 1}
                       </span>
@@ -295,7 +526,8 @@ const TodayTrainingModal = ({
                         <p className="font-medium truncate">{ex.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {ex.sets} × {ex.reps}
-                          {ex.restSeconds > 0 && ` · відпочинок ${ex.restSeconds}с`}
+                          {ex.restSeconds > 0 &&
+                            ` · відпочинок ${ex.restSeconds}с`}
                         </p>
                       </div>
                     </div>
@@ -337,7 +569,9 @@ const TodayTrainingModal = ({
             )}
 
             <div className="flex gap-3">
-              <Button variant="outline" onClick={onClose} className="flex-1">Закрити</Button>
+              <Button variant="outline" onClick={onClose} className="flex-1">
+                Закрити
+              </Button>
               <Button onClick={handleSave} className="flex-1 gap-2">
                 <Save className="w-4 h-4" /> Зберегти корективи
               </Button>
@@ -357,10 +591,26 @@ const defaultPhases = (start: string, end: string) => {
   const total = e - s;
   const fmt = (ms: number) => new Date(ms).toISOString().split("T")[0];
   return {
-    preparatoryGeneral: { startDate: start, endDate: fmt(s + total * 0.28), hoursPercent: 28 },
-    preparatorySpecial: { startDate: fmt(s + total * 0.28), endDate: fmt(s + total * 0.56), hoursPercent: 28 },
-    competitive:        { startDate: fmt(s + total * 0.56), endDate: fmt(s + total * 0.92), hoursPercent: 36 },
-    transitional:       { startDate: fmt(s + total * 0.92), endDate: end,                   hoursPercent: 8 },
+    preparatoryGeneral: {
+      startDate: start,
+      endDate: fmt(s + total * 0.28),
+      hoursPercent: 28,
+    },
+    preparatorySpecial: {
+      startDate: fmt(s + total * 0.28),
+      endDate: fmt(s + total * 0.56),
+      hoursPercent: 28,
+    },
+    competitive: {
+      startDate: fmt(s + total * 0.56),
+      endDate: fmt(s + total * 0.92),
+      hoursPercent: 36,
+    },
+    transitional: {
+      startDate: fmt(s + total * 0.92),
+      endDate: end,
+      hoursPercent: 8,
+    },
   };
 };
 
@@ -370,53 +620,78 @@ type MacroForm = {
   startDate: string;
   endDate: string;
   totalHoursPlanned: string;
-  pg_start: string; pg_end: string;
-  ps_start: string; ps_end: string;
-  comp_start: string; comp_end: string;
-  trans_start: string; trans_end: string;
+  pg_start: string;
+  pg_end: string;
+  ps_start: string;
+  ps_end: string;
+  comp_start: string;
+  comp_end: string;
+  trans_start: string;
+  trans_end: string;
 };
 
 const emptyMacroForm = (): MacroForm => {
   const now = new Date();
   const start = new Date(now.getFullYear(), 8, 1).toISOString().split("T")[0]; // Sep 1
-  const end   = new Date(now.getFullYear() + 1, 7, 31).toISOString().split("T")[0]; // Aug 31 next year
+  const end = new Date(now.getFullYear() + 1, 7, 31)
+    .toISOString()
+    .split("T")[0]; // Aug 31 next year
   const ph = defaultPhases(start, end);
   return {
     name: `${now.getFullYear()}-${now.getFullYear() + 1} Сезон`,
-    sport: "handball", startDate: start, endDate: end,
+    sport: "handball",
+    startDate: start,
+    endDate: end,
     totalHoursPlanned: "300",
-    pg_start: ph.preparatoryGeneral.startDate, pg_end: ph.preparatoryGeneral.endDate,
-    ps_start: ph.preparatorySpecial.startDate, ps_end: ph.preparatorySpecial.endDate,
-    comp_start: ph.competitive.startDate,      comp_end: ph.competitive.endDate,
-    trans_start: ph.transitional.startDate,    trans_end: ph.transitional.endDate,
+    pg_start: ph.preparatoryGeneral.startDate,
+    pg_end: ph.preparatoryGeneral.endDate,
+    ps_start: ph.preparatorySpecial.startDate,
+    ps_end: ph.preparatorySpecial.endDate,
+    comp_start: ph.competitive.startDate,
+    comp_end: ph.competitive.endDate,
+    trans_start: ph.transitional.startDate,
+    trans_end: ph.transitional.endDate,
   };
 };
 
-const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: string }[] }) => {
+const MacroCycleTab = ({
+  athletes,
+}: {
+  athletes: { _id: Id<"athletes">; name: string }[];
+}) => {
   const macrocycles = useQuery(api.macrocycles.getAll) ?? [];
   const activeMacro = macrocycles.find((m) => m.isActive);
   const createMacro = useMutation(api.macrocycles.create);
   const updateMacro = useMutation(api.macrocycles.update);
-  const deactivate  = useMutation(api.macrocycles.deactivate);
+  const deactivate = useMutation(api.macrocycles.deactivate);
   const updateAthlete = useMutation(api.athletes.update);
   const { toast } = useToast();
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<MacroForm>(emptyMacroForm);
-  const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set());
+  const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(
+    new Set(),
+  );
   const [editingId, setEditingId] = useState<Id<"macrocycles"> | null>(null);
 
-  const f = (k: keyof MacroForm, v: string) => setForm((p) => ({ ...p, [k]: v }));
+  const f = (k: keyof MacroForm, v: string) =>
+    setForm((p) => ({ ...p, [k]: v }));
 
   const recalcPhases = (start: string, end: string) => {
     if (!start || !end) return;
     const ph = defaultPhases(start, end);
     setForm((p) => ({
-      ...p, startDate: start, endDate: end,
-      pg_start: ph.preparatoryGeneral.startDate, pg_end: ph.preparatoryGeneral.endDate,
-      ps_start: ph.preparatorySpecial.startDate, ps_end: ph.preparatorySpecial.endDate,
-      comp_start: ph.competitive.startDate,      comp_end: ph.competitive.endDate,
-      trans_start: ph.transitional.startDate,    trans_end: ph.transitional.endDate,
+      ...p,
+      startDate: start,
+      endDate: end,
+      pg_start: ph.preparatoryGeneral.startDate,
+      pg_end: ph.preparatoryGeneral.endDate,
+      ps_start: ph.preparatorySpecial.startDate,
+      ps_end: ph.preparatorySpecial.endDate,
+      comp_start: ph.competitive.startDate,
+      comp_end: ph.competitive.endDate,
+      trans_start: ph.transitional.startDate,
+      trans_end: ph.transitional.endDate,
     }));
   };
 
@@ -435,15 +710,22 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
     setShowForm(true);
   };
 
-  const handleOpenEdit = (m: typeof macrocycles[0]) => {
+  const handleOpenEdit = (m: (typeof macrocycles)[0]) => {
     setEditingId(m._id);
     setForm({
-      name: m.name, sport: m.sport, startDate: m.startDate, endDate: m.endDate,
+      name: m.name,
+      sport: m.sport,
+      startDate: m.startDate,
+      endDate: m.endDate,
       totalHoursPlanned: m.totalHoursPlanned ? String(m.totalHoursPlanned) : "",
-      pg_start: m.phases.preparatoryGeneral.startDate, pg_end: m.phases.preparatoryGeneral.endDate,
-      ps_start: m.phases.preparatorySpecial.startDate, ps_end: m.phases.preparatorySpecial.endDate,
-      comp_start: m.phases.competitive.startDate,      comp_end: m.phases.competitive.endDate,
-      trans_start: m.phases.transitional.startDate,    trans_end: m.phases.transitional.endDate,
+      pg_start: m.phases.preparatoryGeneral.startDate,
+      pg_end: m.phases.preparatoryGeneral.endDate,
+      ps_start: m.phases.preparatorySpecial.startDate,
+      ps_end: m.phases.preparatorySpecial.endDate,
+      comp_start: m.phases.competitive.startDate,
+      comp_end: m.phases.competitive.endDate,
+      trans_start: m.phases.transitional.startDate,
+      trans_end: m.phases.transitional.endDate,
     });
     setSelectedAthletes(new Set(m.athleteIds));
     setShowForm(true);
@@ -452,24 +734,54 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
   const handleSave = async () => {
     if (!form.name || !form.startDate || !form.endDate) return;
     const phases = {
-      preparatoryGeneral: { startDate: form.pg_start, endDate: form.pg_end, hoursPercent: 28 },
-      preparatorySpecial: { startDate: form.ps_start, endDate: form.ps_end, hoursPercent: 28 },
-      competitive:        { startDate: form.comp_start, endDate: form.comp_end, hoursPercent: 36 },
-      transitional:       { startDate: form.trans_start, endDate: form.trans_end, hoursPercent: 8 },
+      preparatoryGeneral: {
+        startDate: form.pg_start,
+        endDate: form.pg_end,
+        hoursPercent: 28,
+      },
+      preparatorySpecial: {
+        startDate: form.ps_start,
+        endDate: form.ps_end,
+        hoursPercent: 28,
+      },
+      competitive: {
+        startDate: form.comp_start,
+        endDate: form.comp_end,
+        hoursPercent: 36,
+      },
+      transitional: {
+        startDate: form.trans_start,
+        endDate: form.trans_end,
+        hoursPercent: 8,
+      },
     };
     const athleteIds = Array.from(selectedAthletes) as Id<"athletes">[];
     let macroId: Id<"macrocycles">;
     if (editingId) {
-      await updateMacro({ id: editingId, name: form.name, startDate: form.startDate,
-        endDate: form.endDate, phases, athleteIds,
-        totalHoursPlanned: form.totalHoursPlanned ? Number(form.totalHoursPlanned) : undefined });
+      await updateMacro({
+        id: editingId,
+        name: form.name,
+        startDate: form.startDate,
+        endDate: form.endDate,
+        phases,
+        athleteIds,
+        totalHoursPlanned: form.totalHoursPlanned
+          ? Number(form.totalHoursPlanned)
+          : undefined,
+      });
       macroId = editingId;
       toast({ description: "Макроцикл оновлено" });
     } else {
       macroId = await createMacro({
-        name: form.name, sport: form.sport, startDate: form.startDate, endDate: form.endDate,
-        phases, athleteIds,
-        totalHoursPlanned: form.totalHoursPlanned ? Number(form.totalHoursPlanned) : undefined,
+        name: form.name,
+        sport: form.sport,
+        startDate: form.startDate,
+        endDate: form.endDate,
+        phases,
+        athleteIds,
+        totalHoursPlanned: form.totalHoursPlanned
+          ? Number(form.totalHoursPlanned)
+          : undefined,
       });
       toast({ description: "Макроцикл створено" });
     }
@@ -481,10 +793,26 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
   };
 
   const PHASE_LABELS = [
-    { key: "pg",   label: "ЗФП — Загальна фізична підготовка",   color: "bg-blue-500/20 border-blue-500/30" },
-    { key: "ps",   label: "СФП — Спеціальна фізична підготовка", color: "bg-violet-500/20 border-violet-500/30" },
-    { key: "comp", label: "Змагальний період",                    color: "bg-yellow-500/20 border-yellow-500/30" },
-    { key: "trans",label: "Перехідний період",                    color: "bg-green-500/20 border-green-500/30" },
+    {
+      key: "pg",
+      label: "ЗФП — Загальна фізична підготовка",
+      color: "bg-blue-500/20 border-blue-500/30",
+    },
+    {
+      key: "ps",
+      label: "СФП — Спеціальна фізична підготовка",
+      color: "bg-violet-500/20 border-violet-500/30",
+    },
+    {
+      key: "comp",
+      label: "Змагальний період",
+      color: "bg-yellow-500/20 border-yellow-500/30",
+    },
+    {
+      key: "trans",
+      label: "Перехідний період",
+      color: "bg-green-500/20 border-green-500/30",
+    },
   ] as const;
 
   return (
@@ -492,7 +820,9 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display font-semibold text-lg">Макроцикл</h2>
-          <p className="text-sm text-muted-foreground">Річний план підготовки</p>
+          <p className="text-sm text-muted-foreground">
+            Річний план підготовки
+          </p>
         </div>
         <Button onClick={handleOpenCreate} className="gap-2">
           <Plus className="w-4 h-4" /> Новий макроцикл
@@ -510,17 +840,26 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {activeMacro.startDate} → {activeMacro.endDate}
-                {activeMacro.totalHoursPlanned && ` · ${activeMacro.totalHoursPlanned} год.`}
+                {activeMacro.totalHoursPlanned &&
+                  ` · ${activeMacro.totalHoursPlanned} год.`}
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleOpenEdit(activeMacro)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenEdit(activeMacro)}
+              >
                 Редагувати
               </Button>
               <Button
-                variant="ghost" size="sm"
+                variant="ghost"
+                size="sm"
                 className="text-destructive hover:text-destructive"
-                onClick={() => { deactivate({ id: activeMacro._id }); toast({ description: "Деактивовано" }); }}
+                onClick={() => {
+                  deactivate({ id: activeMacro._id });
+                  toast({ description: "Деактивовано" });
+                }}
               >
                 Деактивувати
               </Button>
@@ -532,16 +871,40 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
           {/* Phase legend */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {[
-              { label: "ЗФП", color: "bg-blue-500",   start: activeMacro.phases.preparatoryGeneral.startDate, end: activeMacro.phases.preparatoryGeneral.endDate },
-              { label: "СФП", color: "bg-violet-500", start: activeMacro.phases.preparatorySpecial.startDate, end: activeMacro.phases.preparatorySpecial.endDate },
-              { label: "Змагальний", color: "bg-yellow-500", start: activeMacro.phases.competitive.startDate, end: activeMacro.phases.competitive.endDate },
-              { label: "Перехідний", color: "bg-green-500",  start: activeMacro.phases.transitional.startDate, end: activeMacro.phases.transitional.endDate },
+              {
+                label: "ЗФП",
+                color: "bg-blue-500",
+                start: activeMacro.phases.preparatoryGeneral.startDate,
+                end: activeMacro.phases.preparatoryGeneral.endDate,
+              },
+              {
+                label: "СФП",
+                color: "bg-violet-500",
+                start: activeMacro.phases.preparatorySpecial.startDate,
+                end: activeMacro.phases.preparatorySpecial.endDate,
+              },
+              {
+                label: "Змагальний",
+                color: "bg-yellow-500",
+                start: activeMacro.phases.competitive.startDate,
+                end: activeMacro.phases.competitive.endDate,
+              },
+              {
+                label: "Перехідний",
+                color: "bg-green-500",
+                start: activeMacro.phases.transitional.startDate,
+                end: activeMacro.phases.transitional.endDate,
+              },
             ].map((ph) => (
               <div key={ph.label} className="flex items-start gap-2">
-                <span className={`w-2 h-2 rounded-full mt-0.5 shrink-0 ${ph.color}`} />
+                <span
+                  className={`w-2 h-2 rounded-full mt-0.5 shrink-0 ${ph.color}`}
+                />
                 <div>
                   <p className="font-medium">{ph.label}</p>
-                  <p className="text-muted-foreground">{ph.start.substring(5)} – {ph.end.substring(5)}</p>
+                  <p className="text-muted-foreground">
+                    {ph.start.substring(5)} – {ph.end.substring(5)}
+                  </p>
                 </div>
               </div>
             ))}
@@ -550,12 +913,17 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
           {/* Assigned athletes */}
           {activeMacro.athleteIds.length > 0 && (
             <div>
-              <p className="text-xs text-muted-foreground mb-2">Спортсмени ({activeMacro.athleteIds.length})</p>
+              <p className="text-xs text-muted-foreground mb-2">
+                Спортсмени ({activeMacro.athleteIds.length})
+              </p>
               <div className="flex flex-wrap gap-1">
                 {activeMacro.athleteIds.map((id) => {
                   const a = athletes.find((x) => x._id === id);
                   return a ? (
-                    <span key={id} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                    <span
+                      key={id}
+                      className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary"
+                    >
                       {a.name}
                     </span>
                   ) : null;
@@ -569,16 +937,31 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
       {/* Past macrocycles */}
       {!showForm && macrocycles.filter((m) => !m.isActive).length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Архів</p>
-          {macrocycles.filter((m) => !m.isActive).map((m) => (
-            <div key={m._id} className="glass-card p-4 flex items-center justify-between">
-              <div>
-                <p className="font-medium text-sm">{m.name}</p>
-                <p className="text-xs text-muted-foreground">{m.startDate} → {m.endDate}</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Архів
+          </p>
+          {macrocycles
+            .filter((m) => !m.isActive)
+            .map((m) => (
+              <div
+                key={m._id}
+                className="glass-card p-4 flex items-center justify-between"
+              >
+                <div>
+                  <p className="font-medium text-sm">{m.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {m.startDate} → {m.endDate}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleOpenEdit(m)}
+                >
+                  Переглянути
+                </Button>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(m)}>Переглянути</Button>
-            </div>
-          ))}
+            ))}
         </div>
       )}
 
@@ -586,7 +969,9 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
         <div className="glass-card p-10 text-center">
           <Calendar className="w-12 h-12 text-muted-foreground/20 mx-auto mb-3" />
           <p className="text-muted-foreground">Макроциклів ще немає</p>
-          <p className="text-sm text-muted-foreground/60 mt-1">Створіть річний план підготовки</p>
+          <p className="text-sm text-muted-foreground/60 mt-1">
+            Створіть річний план підготовки
+          </p>
         </div>
       )}
 
@@ -594,11 +979,15 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
       <AnimatePresence>
         {showForm && (
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
               className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-5"
               onClick={(e) => e.stopPropagation()}
             >
@@ -615,44 +1004,83 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1.5">
                   <Label className="text-sm text-muted-foreground">Назва</Label>
-                  <Input value={form.name} onChange={(e) => f("name", e.target.value)} className="bg-secondary/50 border-border/50" />
+                  <Input
+                    value={form.name}
+                    onChange={(e) => f("name", e.target.value)}
+                    className="bg-secondary/50 border-border/50"
+                  />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">Початок сезону</Label>
-                  <Input type="date" value={form.startDate}
+                  <Label className="text-sm text-muted-foreground">
+                    Початок сезону
+                  </Label>
+                  <Input
+                    type="date"
+                    value={form.startDate}
                     onChange={(e) => recalcPhases(e.target.value, form.endDate)}
-                    className="bg-secondary/50 border-border/50" />
+                    className="bg-secondary/50 border-border/50"
+                  />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">Кінець сезону</Label>
-                  <Input type="date" value={form.endDate}
-                    onChange={(e) => recalcPhases(form.startDate, e.target.value)}
-                    className="bg-secondary/50 border-border/50" />
+                  <Label className="text-sm text-muted-foreground">
+                    Кінець сезону
+                  </Label>
+                  <Input
+                    type="date"
+                    value={form.endDate}
+                    onChange={(e) =>
+                      recalcPhases(form.startDate, e.target.value)
+                    }
+                    className="bg-secondary/50 border-border/50"
+                  />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">Плановий обсяг (год.)</Label>
-                  <Input type="number" value={form.totalHoursPlanned} onChange={(e) => f("totalHoursPlanned", e.target.value)} className="bg-secondary/50 border-border/50" placeholder="300" />
+                  <Label className="text-sm text-muted-foreground">
+                    Плановий обсяг (год.)
+                  </Label>
+                  <Input
+                    type="number"
+                    value={form.totalHoursPlanned}
+                    onChange={(e) => f("totalHoursPlanned", e.target.value)}
+                    className="bg-secondary/50 border-border/50"
+                    placeholder="300"
+                  />
                 </div>
               </div>
 
               {/* Phases */}
               <div className="space-y-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Фази підготовки</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Фази підготовки
+                </p>
                 {PHASE_LABELS.map((ph) => (
-                  <div key={ph.key} className={`rounded-lg border p-3 space-y-2 ${ph.color}`}>
+                  <div
+                    key={ph.key}
+                    className={`rounded-lg border p-3 space-y-2 ${ph.color}`}
+                  >
                     <p className="text-xs font-medium">{ph.label}</p>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Початок</Label>
-                        <Input type="date" value={form[`${ph.key}_start`]}
+                        <Label className="text-xs text-muted-foreground">
+                          Початок
+                        </Label>
+                        <Input
+                          type="date"
+                          value={form[`${ph.key}_start`]}
                           onChange={(e) => f(`${ph.key}_start`, e.target.value)}
-                          className="bg-background/50 border-border/30 h-8 text-sm" />
+                          className="bg-background/50 border-border/30 h-8 text-sm"
+                        />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">Кінець</Label>
-                        <Input type="date" value={form[`${ph.key}_end`]}
+                        <Label className="text-xs text-muted-foreground">
+                          Кінець
+                        </Label>
+                        <Input
+                          type="date"
+                          value={form[`${ph.key}_end`]}
                           onChange={(e) => f(`${ph.key}_end`, e.target.value)}
-                          className="bg-background/50 border-border/30 h-8 text-sm" />
+                          className="bg-background/50 border-border/30 h-8 text-sm"
+                        />
                       </div>
                     </div>
                   </div>
@@ -667,7 +1095,10 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
                   </p>
                   <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto">
                     {athletes.map((a) => (
-                      <label key={a._id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 cursor-pointer text-sm">
+                      <label
+                        key={a._id}
+                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 cursor-pointer text-sm"
+                      >
                         <input
                           type="checkbox"
                           checked={selectedAthletes.has(a._id)}
@@ -682,7 +1113,13 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
               )}
 
               <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => setShowForm(false)} className="flex-1">Скасувати</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowForm(false)}
+                  className="flex-1"
+                >
+                  Скасувати
+                </Button>
                 <Button onClick={handleSave} className="flex-1">
                   {editingId ? "Зберегти" : "Створити"}
                 </Button>
@@ -700,6 +1137,7 @@ const MacroCycleTab = ({ athletes }: { athletes: { _id: Id<"athletes">; name: st
 const Team = () => {
   const athletes = useQuery(api.athletes.getAll) ?? [];
   const allTrainings = (useQuery(api.trainings.getAll) ?? []) as TrainingDoc[];
+  const allReadinessScores = useQuery(api.readinessScores.getAll) ?? [];
   const activeMacro = useQuery(api.macrocycles.getActive) ?? null;
   const createAthlete = useMutation(api.athletes.create);
   const updateAthlete = useMutation(api.athletes.update);
@@ -707,7 +1145,10 @@ const Team = () => {
 
   const [tab, setTab] = useState<"athletes" | "macrocycle">("athletes");
   const [search, setSearch] = useState("");
-  const [todayModalAthlete, setTodayModalAthlete] = useState<{ id: Id<"athletes">; name: string } | null>(null);
+  const [todayModalAthlete, setTodayModalAthlete] = useState<{
+    id: Id<"athletes">;
+    name: string;
+  } | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedId, setSelectedId] = useState<Id<"athletes"> | null>(null);
   const [editingId, setEditingId] = useState<Id<"athletes"> | null>(null);
@@ -717,22 +1158,49 @@ const Team = () => {
   const filtered = athletes.filter(
     (a) =>
       a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.specialization.toLowerCase().includes(search.toLowerCase())
+      a.specialization.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const selectedAthlete = selectedId ? athletes.find((a) => a._id === selectedId) ?? null : null;
+  const selectedAthlete = selectedId
+    ? (athletes.find((a) => a._id === selectedId) ?? null)
+    : null;
 
-  const openAdd = () => { setEditingId(null); setForm(emptyForm); setShowModal(true); };
-  const openEdit = (a: typeof athletes[0]) => {
+  // Latest ІГС for each athlete
+  const latestIGSByAthlete = useMemo(() => {
+    const map = new Map<Id<"athletes">, number>();
+    for (const score of allReadinessScores) {
+      if (score.igs !== undefined && !map.has(score.athleteId)) {
+        map.set(score.athleteId, score.igs);
+      }
+    }
+    return map;
+  }, [allReadinessScores]);
+
+  const openAdd = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setShowModal(true);
+  };
+  const openEdit = (a: (typeof athletes)[0]) => {
     setEditingId(a._id);
     setForm({
-      name: a.name, dateOfBirth: a.dateOfBirth, gender: a.gender,
-      sport: a.sport, specialization: a.specialization, qualification: a.qualification,
-      phone: a.phone ?? "", email: a.email ?? "",
-      height: String(a.height), weight: String(a.weight), trainingAge: String(a.trainingAge),
-      currentCyclePhase: (a.currentCyclePhase as CyclePhase) ?? "preparatory_general",
-      bestResult: a.bestResult ?? "", targetResult: a.targetResult ?? "",
-      injuryNotes: a.injuryNotes ?? "", personalNotes: a.personalNotes ?? "",
+      name: a.name,
+      dateOfBirth: a.dateOfBirth,
+      gender: a.gender,
+      sport: a.sport,
+      specialization: a.specialization,
+      qualification: a.qualification,
+      phone: a.phone ?? "",
+      email: a.email ?? "",
+      height: String(a.height),
+      weight: String(a.weight),
+      trainingAge: String(a.trainingAge),
+      currentCyclePhase:
+        (a.currentCyclePhase as CyclePhase) ?? "preparatory_general",
+      bestResult: a.bestResult ?? "",
+      targetResult: a.targetResult ?? "",
+      injuryNotes: a.injuryNotes ?? "",
+      personalNotes: a.personalNotes ?? "",
     });
     setShowModal(true);
   };
@@ -740,16 +1208,25 @@ const Team = () => {
   const handleSave = async () => {
     if (!form.name) return;
     const payload = {
-      name: form.name, dateOfBirth: form.dateOfBirth, gender: form.gender,
-      sport: form.sport, specialization: form.specialization, qualification: form.qualification,
-      phone: form.phone || undefined, email: form.email || undefined,
-      height: Number(form.height) || 0, weight: Number(form.weight) || 0,
+      name: form.name,
+      dateOfBirth: form.dateOfBirth,
+      gender: form.gender,
+      sport: form.sport,
+      specialization: form.specialization,
+      qualification: form.qualification,
+      phone: form.phone || undefined,
+      email: form.email || undefined,
+      height: Number(form.height) || 0,
+      weight: Number(form.weight) || 0,
       trainingAge: Number(form.trainingAge) || 0,
-      bestResult: form.bestResult || undefined, targetResult: form.targetResult || undefined,
-      injuryNotes: form.injuryNotes || undefined, personalNotes: form.personalNotes || undefined,
+      currentCyclePhase: form.currentCyclePhase,
+      bestResult: form.bestResult || undefined,
+      targetResult: form.targetResult || undefined,
+      injuryNotes: form.injuryNotes || undefined,
+      personalNotes: form.personalNotes || undefined,
     };
     if (editingId) {
-      await updateAthlete({ id: editingId, ...payload, currentCyclePhase: form.currentCyclePhase });
+      await updateAthlete({ id: editingId, ...payload });
       toast({ description: `${form.name} оновлено` });
     } else {
       await createAthlete(payload);
@@ -769,28 +1246,48 @@ const Team = () => {
     if (!activeMacro) return null;
     const today = new Date().toISOString().split("T")[0];
     const { phases } = activeMacro;
-    if (today >= phases.preparatoryGeneral.startDate && today <= phases.preparatoryGeneral.endDate)
+    if (
+      today >= phases.preparatoryGeneral.startDate &&
+      today <= phases.preparatoryGeneral.endDate
+    )
       return "preparatory_general";
-    if (today >= phases.preparatorySpecial.startDate && today <= phases.preparatorySpecial.endDate)
+    if (
+      today >= phases.preparatorySpecial.startDate &&
+      today <= phases.preparatorySpecial.endDate
+    )
       return "preparatory_special";
-    if (today >= phases.competitive.startDate && today <= phases.competitive.endDate)
+    if (
+      today >= phases.competitive.startDate &&
+      today <= phases.competitive.endDate
+    )
       return "competitive";
-    if (today >= phases.transitional.startDate && today <= phases.transitional.endDate)
+    if (
+      today >= phases.transitional.startDate &&
+      today <= phases.transitional.endDate
+    )
       return "transitional";
     return null;
   }, [activeMacro]);
 
   return (
     <DashboardLayout>
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold">Команда</h1>
-            <p className="text-muted-foreground mt-1">{athletes.length} спортсменів</p>
+            <p className="text-muted-foreground mt-1">
+              {athletes.length} спортсменів
+            </p>
           </div>
           <div className="flex gap-2">
             {selectedAthlete && (
-              <Button variant="outline" onClick={() => setSelectedId(null)}>← До списку</Button>
+              <Button variant="outline" onClick={() => setSelectedId(null)}>
+                ← До списку
+              </Button>
             )}
             {tab === "athletes" && !selectedAthlete && (
               <Button onClick={openAdd} className="gap-2">
@@ -808,10 +1305,20 @@ const Team = () => {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  tab === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  tab === t
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {t === "athletes" ? <><User className="w-4 h-4" /> Спортсмени</> : <><Layers className="w-4 h-4" /> Макроцикл</>}
+                {t === "athletes" ? (
+                  <>
+                    <User className="w-4 h-4" /> Спортсмени
+                  </>
+                ) : (
+                  <>
+                    <Layers className="w-4 h-4" /> Макроцикл
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -830,14 +1337,27 @@ const Team = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Пошук за ім'ям або спеціалізацією..."
-                  value={search} onChange={(e) => setSearch(e.target.value)}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 bg-secondary/50 border-border/50 h-11"
                 />
               </div>
             )}
 
             {selectedAthlete ? (
-              <AthleteProfile athlete={selectedAthlete} onEdit={() => openEdit(selectedAthlete)} getAge={getAge} activeMacro={activeMacro} onOpenTodayTraining={() => setTodayModalAthlete({ id: selectedAthlete._id, name: selectedAthlete.name })} />
+              <AthleteProfile
+                athlete={selectedAthlete}
+                onEdit={() => openEdit(selectedAthlete)}
+                getAge={getAge}
+                activeMacro={activeMacro}
+                latestIGSByAthlete={latestIGSByAthlete}
+                onOpenTodayTraining={() =>
+                  setTodayModalAthlete({
+                    id: selectedAthlete._id,
+                    name: selectedAthlete.name,
+                  })
+                }
+              />
             ) : filtered.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 {search ? "Нікого не знайдено" : "Додайте першого спортсмена"}
@@ -845,12 +1365,17 @@ const Team = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filtered.map((a) => {
-                  const phase = (a.currentCyclePhase as CyclePhase) ?? computeCurrentPhase ?? "preparatory_general";
+                  const phase =
+                    (a.currentCyclePhase as CyclePhase) ??
+                    computeCurrentPhase ??
+                    "preparatory_general";
                   const isInMacro = activeMacro?.athleteIds.includes(a._id);
                   return (
                     <motion.div
-                      key={a._id} layout
-                      initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                      key={a._id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
                       className="glass-card p-5 space-y-4 group hover:glow-border transition-all duration-300 cursor-pointer"
                       onClick={() => setSelectedId(a._id)}
                     >
@@ -861,32 +1386,89 @@ const Team = () => {
                           </div>
                           <div>
                             <h3 className="font-semibold">{a.name}</h3>
-                            <p className="text-sm text-muted-foreground">{a.specialization}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {a.specialization}
+                            </p>
                           </div>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={(e) => { e.stopPropagation(); openEdit(a); }}
-                            className="p-2 rounded-lg hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEdit(a);
+                            }}
+                            className="p-2 rounded-lg hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors"
+                          >
                             <Edit2 className="w-4 h-4" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); handleDelete(a._id, a.name); }}
-                            className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(a._id, a.name);
+                            }}
+                            className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div><p className="text-muted-foreground text-xs">Вік</p><p className="font-medium">{getAge(a.dateOfBirth)} р.</p></div>
-                        <div><p className="text-muted-foreground text-xs">Кваліфікація</p><p className="font-medium">{a.qualification}</p></div>
-                        <div><p className="text-muted-foreground text-xs">Кращий</p><p className="font-medium text-primary">{a.bestResult ?? "—"}</p></div>
-                        <div><p className="text-muted-foreground text-xs">Ціль</p><p className="font-medium">{a.targetResult ?? "—"}</p></div>
+                        <div>
+                          <p className="text-muted-foreground text-xs">Вік</p>
+                          <p className="font-medium">
+                            {getAge(a.dateOfBirth)} р.
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs">
+                            Кваліфікація
+                          </p>
+                          <p className="font-medium">{a.qualification}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs">
+                            Кращий
+                          </p>
+                          <p className="font-medium text-primary">
+                            {a.bestResult ?? "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground text-xs">Ціль</p>
+                          <p className="font-medium">{a.targetResult ?? "—"}</p>
+                        </div>
                       </div>
 
                       {/* MacroCycleBar on card */}
                       {activeMacro && isInMacro && (
                         <div className="space-y-1">
                           <MacroCycleBar macro={activeMacro} />
+                        </div>
+                      )}
+
+                      {/* ІГС Badge */}
+                      {latestIGSByAthlete.has(a._id) && (
+                        <div className="space-y-2 p-3 rounded-lg bg-primary/10">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-muted-foreground">
+                              ІГС
+                            </span>
+                            <span className="text-sm font-semibold text-primary">
+                              {latestIGSByAthlete.get(a._id)}/100
+                            </span>
+                          </div>
+                          <IGSColorBar variant="compact" />
+                          <p className="text-xs text-muted-foreground text-center">
+                            {(() => {
+                              const igs = latestIGSByAthlete.get(a._id);
+                              if (igs === undefined) return "";
+                              if (igs >= 85) return "Відмінна";
+                              if (igs >= 70) return "Добра";
+                              if (igs >= 55) return "Задовільна";
+                              return "Потребує роботи";
+                            })()}
+                          </p>
                         </div>
                       )}
 
@@ -927,60 +1509,158 @@ const Team = () => {
         <AnimatePresence>
           {showModal && (
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
               onClick={() => setShowModal(false)}
             >
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
                 className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-5"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between">
-                  <h2 className="font-display font-bold text-xl">{editingId ? "Редагувати" : "Новий спортсмен"}</h2>
-                  <button onClick={() => setShowModal(false)}><X className="w-5 h-5 text-muted-foreground hover:text-foreground" /></button>
+                  <h2 className="font-display font-bold text-xl">
+                    {editingId ? "Редагувати" : "Новий спортсмен"}
+                  </h2>
+                  <button onClick={() => setShowModal(false)}>
+                    <X className="w-5 h-5 text-muted-foreground hover:text-foreground" />
+                  </button>
                 </div>
 
                 <div className="space-y-6">
                   <Section label="Особисті дані">
                     <div className="grid grid-cols-2 gap-3">
-                      <FF label="ПІБ" value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder="Олена Коваленко" span={2} />
-                      <FF label="Дата народження" value={form.dateOfBirth} onChange={(v) => setForm({ ...form, dateOfBirth: v })} type="date" />
+                      <FF
+                        label="ПІБ"
+                        value={form.name}
+                        onChange={(v) => setForm({ ...form, name: v })}
+                        placeholder="Олена Коваленко"
+                        span={2}
+                      />
+                      <FF
+                        label="Дата народження"
+                        value={form.dateOfBirth}
+                        onChange={(v) => setForm({ ...form, dateOfBirth: v })}
+                        type="date"
+                      />
                       <div className="space-y-1.5">
-                        <Label className="text-sm text-muted-foreground">Стать</Label>
-                        <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value as "male" | "female" })}
-                          className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground">
+                        <Label className="text-sm text-muted-foreground">
+                          Стать
+                        </Label>
+                        <select
+                          value={form.gender}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              gender: e.target.value as "male" | "female",
+                            })
+                          }
+                          className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground"
+                        >
                           <option value="male">Чоловіча</option>
                           <option value="female">Жіноча</option>
                         </select>
                       </div>
-                      <FF label="Телефон" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} placeholder="+380..." />
-                      <FF label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="email@mail.com" />
+                      <FF
+                        label="Телефон"
+                        value={form.phone}
+                        onChange={(v) => setForm({ ...form, phone: v })}
+                        placeholder="+380..."
+                      />
+                      <FF
+                        label="Email"
+                        value={form.email}
+                        onChange={(v) => setForm({ ...form, email: v })}
+                        placeholder="email@mail.com"
+                      />
                     </div>
                   </Section>
                   <Section label="Фізичні дані">
                     <div className="grid grid-cols-3 gap-3">
-                      <FF label="Зріст (см)" value={form.height} onChange={(v) => setForm({ ...form, height: v })} type="number" placeholder="170" />
-                      <FF label="Вага (кг)" value={form.weight} onChange={(v) => setForm({ ...form, weight: v })} type="number" placeholder="65" />
-                      <FF label="Стаж (років)" value={form.trainingAge} onChange={(v) => setForm({ ...form, trainingAge: v })} type="number" placeholder="4" />
+                      <FF
+                        label="Зріст (см)"
+                        value={form.height}
+                        onChange={(v) => setForm({ ...form, height: v })}
+                        type="number"
+                        placeholder="170"
+                      />
+                      <FF
+                        label="Вага (кг)"
+                        value={form.weight}
+                        onChange={(v) => setForm({ ...form, weight: v })}
+                        type="number"
+                        placeholder="65"
+                      />
+                      <FF
+                        label="Стаж (років)"
+                        value={form.trainingAge}
+                        onChange={(v) => setForm({ ...form, trainingAge: v })}
+                        type="number"
+                        placeholder="4"
+                      />
                     </div>
                   </Section>
                   <Section label="Спортивні дані">
                     <div className="grid grid-cols-2 gap-3">
-                      <FF label="Вид спорту" value={form.sport} onChange={(v) => setForm({ ...form, sport: v })} placeholder="Гандбол" />
-                      <FF label="Спеціалізація" value={form.specialization} onChange={(v) => setForm({ ...form, specialization: v })} placeholder="Лівий крайній" />
-                      <FF label="Кваліфікація" value={form.qualification} onChange={(v) => setForm({ ...form, qualification: v })} placeholder="КМС" />
-                      <FF label="Кращий результат" value={form.bestResult} onChange={(v) => setForm({ ...form, bestResult: v })} placeholder="—" />
-                      <FF label="Цільовий результат" value={form.targetResult} onChange={(v) => setForm({ ...form, targetResult: v })} placeholder="—" />
+                      <FF
+                        label="Вид спорту"
+                        value={form.sport}
+                        onChange={(v) => setForm({ ...form, sport: v })}
+                        placeholder="Гандбол"
+                      />
+                      <FF
+                        label="Спеціалізація"
+                        value={form.specialization}
+                        onChange={(v) =>
+                          setForm({ ...form, specialization: v })
+                        }
+                        placeholder="Лівий крайній"
+                      />
+                      <FF
+                        label="Кваліфікація"
+                        value={form.qualification}
+                        onChange={(v) => setForm({ ...form, qualification: v })}
+                        placeholder="КМС"
+                      />
+                      <FF
+                        label="Кращий результат"
+                        value={form.bestResult}
+                        onChange={(v) => setForm({ ...form, bestResult: v })}
+                        placeholder="—"
+                      />
+                      <FF
+                        label="Цільовий результат"
+                        value={form.targetResult}
+                        onChange={(v) => setForm({ ...form, targetResult: v })}
+                        placeholder="—"
+                      />
                     </div>
                   </Section>
                   <Section label="Тренувальний цикл">
                     <div className="space-y-1.5">
-                      <Label className="text-sm text-muted-foreground">Поточна фаза підготовки</Label>
-                      <select value={form.currentCyclePhase} onChange={(e) => setForm({ ...form, currentCyclePhase: e.target.value as CyclePhase })}
-                        className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground">
-                        <option value="preparatory_general">Підготовчий загальний</option>
-                        <option value="preparatory_special">Підготовчий спеціальний</option>
+                      <Label className="text-sm text-muted-foreground">
+                        Поточна фаза підготовки
+                      </Label>
+                      <select
+                        value={form.currentCyclePhase}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            currentCyclePhase: e.target.value as CyclePhase,
+                          })
+                        }
+                        className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground"
+                      >
+                        <option value="preparatory_general">
+                          Підготовчий загальний
+                        </option>
+                        <option value="preparatory_special">
+                          Підготовчий спеціальний
+                        </option>
                         <option value="pre_competitive">Передзмагальний</option>
                         <option value="competitive">Змагальний</option>
                         <option value="restorative">Відновний</option>
@@ -990,21 +1670,45 @@ const Team = () => {
                   </Section>
                   <div className="space-y-3">
                     <div className="space-y-1.5">
-                      <Label className="text-sm text-muted-foreground">Травми / обмеження</Label>
-                      <Textarea value={form.injuryNotes} onChange={(e) => setForm({ ...form, injuryNotes: e.target.value })}
-                        placeholder="Інформація про травми..." className="bg-secondary/50 border-border/50 min-h-[60px]" />
+                      <Label className="text-sm text-muted-foreground">
+                        Травми / обмеження
+                      </Label>
+                      <Textarea
+                        value={form.injuryNotes}
+                        onChange={(e) =>
+                          setForm({ ...form, injuryNotes: e.target.value })
+                        }
+                        placeholder="Інформація про травми..."
+                        className="bg-secondary/50 border-border/50 min-h-[60px]"
+                      />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-sm text-muted-foreground">Нотатки тренера</Label>
-                      <Textarea value={form.personalNotes} onChange={(e) => setForm({ ...form, personalNotes: e.target.value })}
-                        placeholder="Особливості роботи з цим спортсменом..." className="bg-secondary/50 border-border/50 min-h-[60px]" />
+                      <Label className="text-sm text-muted-foreground">
+                        Нотатки тренера
+                      </Label>
+                      <Textarea
+                        value={form.personalNotes}
+                        onChange={(e) =>
+                          setForm({ ...form, personalNotes: e.target.value })
+                        }
+                        placeholder="Особливості роботи з цим спортсменом..."
+                        className="bg-secondary/50 border-border/50 min-h-[60px]"
+                      />
                     </div>
                   </div>
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1">Скасувати</Button>
-                  <Button onClick={handleSave} className="flex-1">{editingId ? "Зберегти" : "Додати"}</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowModal(false)}
+                    className="flex-1"
+                  >
+                    Скасувати
+                  </Button>
+                  <Button onClick={handleSave} className="flex-1">
+                    {editingId ? "Зберегти" : "Додати"}
+                  </Button>
                 </div>
               </motion.div>
             </motion.div>
@@ -1017,46 +1721,95 @@ const Team = () => {
 
 // ─── Helper UI ───────────────────────────────────────────────────────────────
 
-const Section = ({ label, children }: { label: string; children: React.ReactNode }) => (
+const Section = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
   <div>
-    <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">{label}</h3>
+    <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">
+      {label}
+    </h3>
     {children}
   </div>
 );
 
-const FF = ({ label, value, onChange, placeholder, type, span }: {
-  label: string; value: string; onChange: (v: string) => void;
-  placeholder?: string; type?: string; span?: number;
+const FF = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type,
+  span,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+  span?: number;
 }) => (
   <div className={`space-y-1.5 ${span === 2 ? "col-span-2" : ""}`}>
     <Label className="text-sm text-muted-foreground">{label}</Label>
-    <Input type={type || "text"} placeholder={placeholder} value={value}
-      onChange={(e) => onChange(e.target.value)} className="bg-secondary/50 border-border/50" />
+    <Input
+      type={type || "text"}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="bg-secondary/50 border-border/50"
+    />
   </div>
 );
 
 type AthleteDoc = {
-  _id: Id<"athletes">; name: string; dateOfBirth: string; gender: "male" | "female";
-  sport: string; specialization: string; qualification: string; phone?: string; email?: string;
-  height: number; weight: number; trainingAge: number; currentCyclePhase?: string;
-  bestResult?: string; targetResult?: string; injuryNotes?: string; personalNotes?: string;
-  isActive: boolean; macroCycleId?: Id<"macrocycles">;
+  _id: Id<"athletes">;
+  name: string;
+  dateOfBirth: string;
+  gender: "male" | "female";
+  sport: string;
+  specialization: string;
+  qualification: string;
+  phone?: string;
+  email?: string;
+  height: number;
+  weight: number;
+  trainingAge: number;
+  currentCyclePhase?: string;
+  bestResult?: string;
+  targetResult?: string;
+  injuryNotes?: string;
+  personalNotes?: string;
+  isActive: boolean;
+  macroCycleId?: Id<"macrocycles">;
 };
 
 const AthleteProfile = ({
-  athlete, onEdit, getAge, activeMacro, onOpenTodayTraining,
+  athlete,
+  onEdit,
+  getAge,
+  activeMacro,
+  latestIGSByAthlete,
+  onOpenTodayTraining,
 }: {
   athlete: AthleteDoc;
   onEdit: () => void;
   getAge: (dob: string) => number;
   activeMacro: MacroDoc | null;
+  latestIGSByAthlete: Map<Id<"athletes">, number>;
   onOpenTodayTraining: () => void;
 }) => {
-  const phase = (athlete.currentCyclePhase as CyclePhase) ?? "preparatory_general";
+  const phase =
+    (athlete.currentCyclePhase as CyclePhase) ?? "preparatory_general";
   const isInMacro = activeMacro?.athleteIds.includes(athlete._id);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6"
+    >
       <div className="glass-card p-6">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -1064,15 +1817,29 @@ const AthleteProfile = ({
               <User className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h2 className="text-2xl font-display font-bold">{athlete.name}</h2>
-              <p className="text-muted-foreground">{athlete.specialization} · {athlete.qualification}</p>
+              <h2 className="text-2xl font-display font-bold">
+                {athlete.name}
+              </h2>
+              <p className="text-muted-foreground">
+                {athlete.specialization} · {athlete.qualification}
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={onOpenTodayTraining} className="gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenTodayTraining}
+              className="gap-1"
+            >
               <Dumbbell className="w-3 h-3" /> Тренування сьогодні
             </Button>
-            <Button variant="outline" size="sm" onClick={onEdit} className="gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="gap-1"
+            >
               <Edit2 className="w-3 h-3" /> Редагувати
             </Button>
           </div>
@@ -1082,39 +1849,79 @@ const AthleteProfile = ({
           <InfoCell label="Зріст" value={`${athlete.height} см`} />
           <InfoCell label="Вага" value={`${athlete.weight} кг`} />
           <InfoCell label="Стаж" value={`${athlete.trainingAge} р.`} />
-          <InfoCell label="Кращий" value={athlete.bestResult ?? "—"} highlight />
+          <InfoCell
+            label="Кращий"
+            value={athlete.bestResult ?? "—"}
+            highlight
+          />
           <InfoCell label="Ціль" value={athlete.targetResult ?? "—"} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="glass-card p-5 space-y-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">Поточна фаза</p>
-          <span className={`inline-block text-sm px-3 py-1.5 rounded-md font-semibold ${cycleLabels[phase]?.color ?? "bg-muted text-muted-foreground"}`}>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+            Поточна фаза
+          </p>
+          <span
+            className={`inline-block text-sm px-3 py-1.5 rounded-md font-semibold ${cycleLabels[phase]?.color ?? "bg-muted text-muted-foreground"}`}
+          >
             {cycleLabels[phase]?.label ?? phase}
           </span>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Activity className="w-4 h-4" /><span>{athlete.sport}</span>
+            <Activity className="w-4 h-4" />
+            <span>{athlete.sport}</span>
           </div>
           {activeMacro && isInMacro && (
             <div className="pt-1">
-              <p className="text-xs text-muted-foreground mb-2">{activeMacro.name}</p>
+              <p className="text-xs text-muted-foreground mb-2">
+                {activeMacro.name}
+              </p>
               <MacroCycleBar macro={activeMacro} />
             </div>
           )}
         </div>
 
+        {latestIGSByAthlete.has(athlete._id) && (
+          <div className="glass-card p-5 space-y-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+              Індекс готовності (ІГС)
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-display font-bold text-primary">
+                {latestIGSByAthlete.get(athlete._id)}
+              </span>
+              <span className="text-muted-foreground">/100</span>
+            </div>
+            <IGSColorBar variant="full" />
+            <p className="text-sm text-muted-foreground">
+              {(() => {
+                const igs = latestIGSByAthlete.get(athlete._id);
+                if (igs === undefined) return "";
+                if (igs >= 85) return "Відмінна готовність до змагань";
+                if (igs >= 70) return "Добра готовність";
+                if (igs >= 55) return "Задовільна готовність";
+                return "Потребує підготовки";
+              })()}
+            </p>
+          </div>
+        )}
+
         {(athlete.injuryNotes || athlete.personalNotes) && (
           <div className="glass-card p-5 space-y-3">
             {athlete.injuryNotes && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Травми / обмеження</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                  Травми / обмеження
+                </p>
                 <p className="text-sm">{athlete.injuryNotes}</p>
               </div>
             )}
             {athlete.personalNotes && (
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Нотатки тренера</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                  Нотатки тренера
+                </p>
                 <p className="text-sm">{athlete.personalNotes}</p>
               </div>
             )}
@@ -1124,10 +1931,14 @@ const AthleteProfile = ({
 
       {(athlete.phone || athlete.email) && (
         <div className="glass-card p-5">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Контакти</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">
+            Контакти
+          </p>
           <div className="flex gap-6 text-sm">
             {athlete.phone && <span>{athlete.phone}</span>}
-            {athlete.email && <span className="text-muted-foreground">{athlete.email}</span>}
+            {athlete.email && (
+              <span className="text-muted-foreground">{athlete.email}</span>
+            )}
           </div>
         </div>
       )}
@@ -1135,10 +1946,20 @@ const AthleteProfile = ({
   );
 };
 
-const InfoCell = ({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
+const InfoCell = ({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) => (
   <div>
     <p className="text-xs text-muted-foreground">{label}</p>
-    <p className={`font-semibold ${highlight ? "text-primary" : ""}`}>{value}</p>
+    <p className={`font-semibold ${highlight ? "text-primary" : ""}`}>
+      {value}
+    </p>
   </div>
 );
 

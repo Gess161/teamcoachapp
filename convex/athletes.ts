@@ -47,6 +47,16 @@ export const create = mutation({
     height: v.number(),
     weight: v.number(),
     trainingAge: v.number(),
+    currentCyclePhase: v.optional(
+      v.union(
+        v.literal("preparatory_general"),
+        v.literal("preparatory_special"),
+        v.literal("pre_competitive"),
+        v.literal("competitive"),
+        v.literal("restorative"),
+        v.literal("transitional"),
+      ),
+    ),
     bestResult: v.optional(v.string()),
     targetResult: v.optional(v.string()),
     injuryNotes: v.optional(v.string()),
@@ -86,8 +96,8 @@ export const update = mutation({
         v.literal("pre_competitive"),
         v.literal("competitive"),
         v.literal("restorative"),
-        v.literal("transitional")
-      )
+        v.literal("transitional"),
+      ),
     ),
     macroCycleId: v.optional(v.id("macrocycles")),
   },
@@ -123,7 +133,7 @@ export const updateCyclePhase = mutation({
       v.literal("pre_competitive"),
       v.literal("competitive"),
       v.literal("restorative"),
-      v.literal("transitional")
+      v.literal("transitional"),
     ),
     macroCycleId: v.optional(v.id("macrocycles")),
   },
