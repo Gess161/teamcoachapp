@@ -50,7 +50,7 @@ export const getByStatus = query({
     status: v.union(
       v.literal("planned"),
       v.literal("in_progress"),
-      v.literal("completed")
+      v.literal("completed"),
     ),
   },
   handler: async (ctx, { status }) => {
@@ -90,6 +90,7 @@ export const create = mutation({
   args: {
     name: v.string(),
     date: v.string(),
+    time: v.optional(v.string()),
     description: v.optional(v.string()),
     type: v.union(
       v.literal("strength"),
@@ -99,7 +100,7 @@ export const create = mutation({
       v.literal("recovery"),
       v.literal("mixed"),
       v.literal("tactical"),
-      v.literal("competition")
+      v.literal("competition"),
     ),
     preparationType: v.optional(
       v.union(
@@ -109,16 +110,11 @@ export const create = mutation({
         v.literal("Тактична"),
         v.literal("Психологічна"),
         v.literal("Теоретична"),
-        v.literal("Змішана")
-      )
+        v.literal("Змішана"),
+      ),
     ),
     loadLevel: v.optional(
-      v.union(
-        v.literal("В"),
-        v.literal("ЗН"),
-        v.literal("С"),
-        v.literal("М")
-      )
+      v.union(v.literal("В"), v.literal("ЗН"), v.literal("С"), v.literal("М")),
     ),
     exercises: v.array(exerciseValidator),
     globalCriteria: v.array(exerciseCriterionValidator),
@@ -140,6 +136,7 @@ export const update = mutation({
     id: v.id("trainings"),
     name: v.optional(v.string()),
     date: v.optional(v.string()),
+    time: v.optional(v.string()),
     description: v.optional(v.string()),
     type: v.optional(
       v.union(
@@ -150,8 +147,8 @@ export const update = mutation({
         v.literal("recovery"),
         v.literal("mixed"),
         v.literal("tactical"),
-        v.literal("competition")
-      )
+        v.literal("competition"),
+      ),
     ),
     preparationType: v.optional(
       v.union(
@@ -161,16 +158,11 @@ export const update = mutation({
         v.literal("Тактична"),
         v.literal("Психологічна"),
         v.literal("Теоретична"),
-        v.literal("Змішана")
-      )
+        v.literal("Змішана"),
+      ),
     ),
     loadLevel: v.optional(
-      v.union(
-        v.literal("В"),
-        v.literal("ЗН"),
-        v.literal("С"),
-        v.literal("М")
-      )
+      v.union(v.literal("В"), v.literal("ЗН"), v.literal("С"), v.literal("М")),
     ),
     exercises: v.optional(v.array(exerciseValidator)),
     globalCriteria: v.optional(v.array(exerciseCriterionValidator)),
@@ -179,8 +171,8 @@ export const update = mutation({
       v.union(
         v.literal("planned"),
         v.literal("in_progress"),
-        v.literal("completed")
-      )
+        v.literal("completed"),
+      ),
     ),
     durationMinutes: v.optional(v.number()),
   },
@@ -195,7 +187,7 @@ export const updateStatus = mutation({
     status: v.union(
       v.literal("planned"),
       v.literal("in_progress"),
-      v.literal("completed")
+      v.literal("completed"),
     ),
   },
   handler: async (ctx, { id, status }) => {

@@ -1,6 +1,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, ChevronDown, Zap, Layers, BarChart2, Target, RefreshCw, Lightbulb, MousePointer, Users, Dumbbell, ClipboardCheck, BarChart3, GraduationCap } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  Zap,
+  Layers,
+  BarChart2,
+  Target,
+  RefreshCw,
+  Lightbulb,
+  MousePointer,
+  Users,
+  Dumbbell,
+  ClipboardCheck,
+  BarChart3,
+  GraduationCap,
+} from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 
 interface Section {
@@ -144,6 +159,38 @@ const sections: Section[] = [
       },
     ],
   },
+  {
+    id: "calendar",
+    title: "Календар тренувань",
+    icon: Lightbulb,
+    color: "text-pink-400",
+    content: [
+      {
+        heading: "Що таке календар?",
+        text: "Календар — це візуальний розпорядник усіх запланованих тренувань. Він дозволяє побачити весь розклад на місяць, відстежити скільки спортсменів беруть участь у кожній сесії, та швидко переглянути відповідну інформацію.",
+      },
+      {
+        heading: "Як перейти в календар?",
+        text: "Натисніть «Календар» в головному меню. Ви побачите календар поточного місяця з позначками днів, у яких є запланованих тренувань (синя крапка).",
+      },
+      {
+        heading: "Навігація по місяцях",
+        text: "Використовуйте стрілки ← → вгорі календаря для переходу на попередній чи наступний місяць. Календар автоматично розрахує розкладку днів тижня для кожного місяця.",
+      },
+      {
+        heading: "Вибір дати та перегляд тренувань",
+        text: "Клікніть на будь-яку дату в календарі. З правої сторони з'явиться список тренувань на цей день: назва, час проведення і кількість учасників. Вибрана дата виділиться синім кольором.",
+      },
+      {
+        heading: "Джерело даних",
+        text: "Дані у календарі синхронізуються з тренуваннями зі сторінки «Тренування». Усі тренування, створені з датою та часом, автоматично з'являються у відповідних клітинках календаря. На сьогодні можна подивитися зі звичайною датою.",
+      },
+      {
+        heading: "Переважна інформація",
+        text: "Для кожного тренування календар показує: назву (наприклад, «Силове тренування»), час проведення (наприклад, «10:00»), кількість спортсменів, що беруть участь. Це дозволяє тренеру швидко оцінити завантаженість дня.",
+      },
+    ],
+  },
 ];
 
 const AccordionItem = ({ section }: { section: Section }) => {
@@ -157,7 +204,9 @@ const AccordionItem = ({ section }: { section: Section }) => {
         className="w-full flex items-center gap-4 px-6 py-5 text-left hover:bg-secondary/20 transition-colors"
       >
         <Icon className={`w-5 h-5 shrink-0 ${section.color}`} />
-        <span className="font-display font-semibold flex-1">{section.title}</span>
+        <span className="font-display font-semibold flex-1">
+          {section.title}
+        </span>
         <ChevronDown
           className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
             open ? "rotate-180" : ""
@@ -177,8 +226,12 @@ const AccordionItem = ({ section }: { section: Section }) => {
             <div className="px-6 pb-6 space-y-4 border-t border-border/40 pt-4">
               {section.content.map((c) => (
                 <div key={c.heading}>
-                  <h4 className={`text-sm font-semibold mb-1 ${section.color}`}>{c.heading}</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{c.text}</p>
+                  <h4 className={`text-sm font-semibold mb-1 ${section.color}`}>
+                    {c.heading}
+                  </h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {c.text}
+                  </p>
                 </div>
               ))}
             </div>
@@ -271,24 +324,46 @@ const appHints: {
       "Якщо тест ДЮСШ показує «Нижче норми» — це сигнал приділити більше уваги відповідній фізичній якості в поточному мезоциклі.",
     ],
   },
+  {
+    icon: GraduationCap,
+    color: "text-pink-400",
+    bg: "bg-pink-500/10",
+    title: "Календар",
+    hints: [
+      "Календар автоматично синхронізується з тренуваннями зі сторінки «Тренування».",
+      "Дні з тренуваннями позначені синюю крапкою в календарі. Клікніть на дату — справа з'явиться список всіх тренувань цього дня.",
+      "Для кожного тренування календар показує час (якщо вказаний) і кількість учасників — це допомагає швидко оцінити навантаженість дня.",
+      "Навігуйте по місяцях стрілками ← →. Календар коректно розраховує перший день тижня для кожного місяця.",
+      "Якщо під час створення тренування не вказати час, календар покаже «09:00» як час за замовчуванням.",
+    ],
+  },
 ];
 
 // ─── Hint Card ────────────────────────────────────────────────────────────────
 
-const HintCard = ({ group }: { group: typeof appHints[0] }) => {
+const HintCard = ({ group }: { group: (typeof appHints)[0] }) => {
   const Icon = group.icon;
   return (
     <div className="glass-card p-5 space-y-3">
       <div className="flex items-center gap-3">
-        <div className={`w-9 h-9 rounded-lg ${group.bg} flex items-center justify-center shrink-0`}>
+        <div
+          className={`w-9 h-9 rounded-lg ${group.bg} flex items-center justify-center shrink-0`}
+        >
           <Icon className={`w-4 h-4 ${group.color}`} />
         </div>
         <h3 className="font-display font-semibold">{group.title}</h3>
       </div>
       <ul className="space-y-2">
         {group.hints.map((hint, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-            <span className={`text-xs font-bold mt-0.5 shrink-0 ${group.color}`}>{i + 1}.</span>
+          <li
+            key={i}
+            className="flex items-start gap-2 text-sm text-muted-foreground"
+          >
+            <span
+              className={`text-xs font-bold mt-0.5 shrink-0 ${group.color}`}
+            >
+              {i + 1}.
+            </span>
             <span className="leading-relaxed">{hint}</span>
           </li>
         ))}
@@ -318,10 +393,16 @@ const LearnPage = () => {
 
         {/* Tabs */}
         <div className="flex gap-1 bg-secondary/50 rounded-lg p-1 w-fit">
-          {([
-            { key: "hints",  label: "Як користуватись", icon: Lightbulb },
-            { key: "theory", label: "Теорія (Платонов)", icon: GraduationCap },
-          ] as const).map((t) => (
+          {(
+            [
+              { key: "hints", label: "Як користуватись", icon: Lightbulb },
+              {
+                key: "theory",
+                label: "Теорія (Платонов)",
+                icon: GraduationCap,
+              },
+            ] as const
+          ).map((t) => (
             <button
               key={t.key}
               onClick={() => setActiveTab(t.key)}
@@ -366,8 +447,9 @@ const LearnPage = () => {
                 <div className="text-sm">
                   <p className="font-medium">Джерело: Платонов В. М. (2004)</p>
                   <p className="text-muted-foreground">
-                    «Система підготовки спортсменів в олімпійському спорті» — основна методологічна
-                    база цього додатку. Всі формули та класифікації базуються на цій монографії.
+                    «Система підготовки спортсменів в олімпійському спорті» —
+                    основна методологічна база цього додатку. Всі формули та
+                    класифікації базуються на цій монографії.
                   </p>
                 </div>
               </div>

@@ -31,8 +31,8 @@ export default defineSchema({
         v.literal("pre_competitive"),
         v.literal("competitive"),
         v.literal("restorative"),
-        v.literal("transitional")
-      )
+        v.literal("transitional"),
+      ),
     ),
     macroCycleId: v.optional(v.id("macrocycles")),
     bestResult: v.optional(v.string()),
@@ -49,6 +49,7 @@ export default defineSchema({
   trainings: defineTable({
     name: v.string(),
     date: v.string(), // ISO date "2026-03-28"
+    time: v.optional(v.string()), // HH:MM format "10:00"
     description: v.optional(v.string()),
     type: v.union(
       v.literal("strength"),
@@ -58,7 +59,7 @@ export default defineSchema({
       v.literal("recovery"),
       v.literal("mixed"),
       v.literal("tactical"),
-      v.literal("competition")
+      v.literal("competition"),
     ),
     // Вид підготовки за Платоновим
     preparationType: v.optional(
@@ -69,17 +70,17 @@ export default defineSchema({
         v.literal("Тактична"),
         v.literal("Психологічна"),
         v.literal("Теоретична"),
-        v.literal("Змішана")
-      )
+        v.literal("Змішана"),
+      ),
     ),
     // Рівень навантаження за Платоновим
     loadLevel: v.optional(
       v.union(
-        v.literal("В"),   // Великі (1.00)
-        v.literal("ЗН"),  // Значні (0.75)
-        v.literal("С"),   // Середні (0.50)
-        v.literal("М")    // Малі (0.25)
-      )
+        v.literal("В"), // Великі (1.00)
+        v.literal("ЗН"), // Значні (0.75)
+        v.literal("С"), // Середні (0.50)
+        v.literal("М"), // Малі (0.25)
+      ),
     ),
     exercises: v.array(
       v.object({
@@ -96,9 +97,9 @@ export default defineSchema({
             description: v.optional(v.string()),
             scale: v.string(),
             weight: v.number(),
-          })
+          }),
         ),
-      })
+      }),
     ),
     globalCriteria: v.array(
       v.object({
@@ -107,12 +108,12 @@ export default defineSchema({
         description: v.optional(v.string()),
         scale: v.string(),
         weight: v.number(),
-      })
+      }),
     ),
     status: v.union(
       v.literal("planned"),
       v.literal("in_progress"),
-      v.literal("completed")
+      v.literal("completed"),
     ),
     athleteIds: v.array(v.id("athletes")), // хто бере участь
     mesocycleId: v.optional(v.id("mesocycles")),
@@ -135,7 +136,7 @@ export default defineSchema({
         criterionName: v.string(),
         value: v.union(v.string(), v.number()),
         score: v.optional(v.number()), // normalized 0-100
-      })
+      }),
     ),
     exerciseResults: v.array(
       v.object({
@@ -147,9 +148,9 @@ export default defineSchema({
             criterionName: v.string(),
             value: v.union(v.string(), v.number()),
             score: v.optional(v.number()),
-          })
+          }),
         ),
-      })
+      }),
     ),
     overallScore: v.optional(v.number()), // ІТН-оцінка за заняття
     coachNotes: v.optional(v.string()),
@@ -166,11 +167,11 @@ export default defineSchema({
     description: v.optional(v.string()),
     sport: v.string(), // "handball"
     physicalQuality: v.union(
-      v.literal("strength"),     // Сила
-      v.literal("endurance"),    // Витривалість
-      v.literal("flexibility"),  // Гнучкість
+      v.literal("strength"), // Сила
+      v.literal("endurance"), // Витривалість
+      v.literal("flexibility"), // Гнучкість
       v.literal("coordination"), // Координація
-      v.literal("speed")         // Швидкість
+      v.literal("speed"), // Швидкість
     ),
     unit: v.string(), // "с", "м", "рази", "см"
     // Чи менше = краще (для часових тестів)
@@ -181,10 +182,10 @@ export default defineSchema({
         ageGroup: v.string(), // "U12", "U14", "U16", "U18", "U20+"
         gender: v.union(v.literal("male"), v.literal("female")),
         // Рівні нормативів
-        excellent: v.number(),  // Відмінно
-        good: v.number(),       // Добре
+        excellent: v.number(), // Відмінно
+        good: v.number(), // Добре
         satisfactory: v.number(), // Задовільно
-      })
+      }),
     ),
     isActive: v.boolean(),
   })
@@ -203,8 +204,8 @@ export default defineSchema({
         v.literal("excellent"),
         v.literal("good"),
         v.literal("satisfactory"),
-        v.literal("below_norm")
-      )
+        v.literal("below_norm"),
+      ),
     ),
     normPercent: v.optional(v.number()), // % від нормативу "good"
     notes: v.optional(v.string()),
@@ -259,7 +260,7 @@ export default defineSchema({
       v.literal("відновний"),
       v.literal("змагальний"),
       v.literal("передзмагальний"),
-      v.literal("стабілізуючий")
+      v.literal("стабілізуючий"),
     ),
     startDate: v.string(),
     endDate: v.string(),
@@ -271,8 +272,8 @@ export default defineSchema({
   anthropometry: defineTable({
     athleteId: v.id("athletes"),
     date: v.string(),
-    height: v.number(),    // cm
-    weight: v.number(),    // kg
+    height: v.number(), // cm
+    weight: v.number(), // kg
     wingspan: v.optional(v.number()), // розмах рук (для гандболу важливо)
     bodyFatPercent: v.optional(v.number()),
     notes: v.optional(v.string()),
@@ -283,10 +284,10 @@ export default defineSchema({
     athleteId: v.id("athletes"),
     date: v.string(),
     // Основні компоненти ІГС
-    physical: v.optional(v.number()),       // 0-100
-    technical: v.optional(v.number()),      // 0-100
-    tactical: v.optional(v.number()),       // 0-100
-    psychological: v.optional(v.number()),  // 0-100
+    physical: v.optional(v.number()), // 0-100
+    technical: v.optional(v.number()), // 0-100
+    tactical: v.optional(v.number()), // 0-100
+    psychological: v.optional(v.number()), // 0-100
     // Розширені (опціонально)
     functional: v.optional(v.number()),
     coordination: v.optional(v.number()),
