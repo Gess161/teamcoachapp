@@ -1,14 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Plus,
-  Search,
-  Edit2,
-  Trash2,
-  User,
-  ChevronRight,
-  Layers,
-} from "lucide-react";
+import { Plus, Search, Layers, User } from "lucide-react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -16,14 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DashboardLayout from "@/shared/ui/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
-import { cycleLabels } from "@/entities/athlete/constants";
 import { emptyForm } from "@/entities/athlete/types";
 import { getAge } from "@/entities/athlete/lib";
 import type { CyclePhase, FormState, AthleteDoc } from "@/entities/athlete/types";
 import type { TrainingDoc } from "@/entities/training/types";
 import type { MacroDoc } from "@/entities/macrocycle/types";
-import MacroCycleBar from "@/widgets/MacroCycleBar";
-import IGSColorBar from "@/shared/ui/IGSColorBar";
+import AthleteCard from "@/widgets/AthleteCard";
 import TodayTrainingModal from "@/widgets/TodayTrainingModal";
 import MacroCycleTab from "@/widgets/MacroCycleTab";
 import AthleteProfile from "@/widgets/AthleteProfile";
@@ -261,130 +251,18 @@ const Team = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map((a) => {
-                  const phase =
-                    (a.currentCyclePhase as CyclePhase) ??
-                    computeCurrentPhase ??
-                    "preparatory_general";
-                  const isInMacro = activeMacro?.athleteIds.includes(a._id);
-                  return (
-                    <motion.div
-                      key={a._id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="glass-card p-5 space-y-4 group hover:glow-border transition-all duration-300 cursor-pointer"
-                      onClick={() => setSelectedId(a._id)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User className="w-6 h-6 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold">{a.name}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {a.specialization}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEdit(a);
-                            }}
-                            className="p-2 rounded-lg hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(a._id, a.name);
-                            }}
-                            className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <p className="text-muted-foreground text-xs">Вік</p>
-                          <p className="font-medium">
-                            {getAge(a.dateOfBirth)} р.
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground text-xs">
-                            Кваліфікація
-                          </p>
-                          <p className="font-medium">{a.qualification}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground text-xs">
-                            Кращий
-                          </p>
-                          <p className="font-medium text-primary">
-                            {a.bestResult ?? "—"}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground text-xs">Ціль</p>
-                          <p className="font-medium">{a.targetResult ?? "—"}</p>
-                        </div>
-                      </div>
-
-                      {/* MacroCycleBar on card */}
-                      {activeMacro && isInMacro && (
-                        <div className="space-y-1">
-                          <MacroCycleBar macro={activeMacro} />
-                        </div>
-                      )}
-
-                      {/* ІГС Badge */}
-                      {latestIGSByAthlete.has(a._id) && (
-                        <div className="space-y-2 p-3 rounded-lg bg-primary/10">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-muted-foreground">
-                              ІГС
-                            </span>
-                            <span className="text-sm font-semibold text-primary">
-                              {latestIGSByAthlete.get(a._id)}/100
-                            </span>
-                          </div>
-                          <IGSColorBar variant="compact" />
-                          <p className="text-xs text-muted-foreground text-center">
-                            {(() => {
-                              const igs = latestIGSByAthlete.get(a._id);
-                              if (igs === undefined) return "";
-                              if (igs >= 85) return "Відмінна";
-                              if (igs >= 70) return "Добра";
-                              if (igs >= 55) return "Задовільна";
-                              return "Потребує роботи";
-                            })()}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setTodayModalAthlete({ id: a._id, name: a.name });
-                          }}
-                          className={`text-xs px-2 py-1 rounded-md font-medium hover:brightness-125 transition-all ${cycleLabels[phase as CyclePhase]?.color ?? "bg-muted text-muted-foreground"}`}
-                          title="Тренування сьогодні"
-                        >
-                          {cycleLabels[phase as CyclePhase]?.label ?? phase}
-                        </button>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                {filtered.map((a) => (
+                  <AthleteCard
+                    key={a._id}
+                    athlete={a as AthleteDoc}
+                    activeMacro={activeMacro}
+                    latestIGS={latestIGSByAthlete.get(a._id)}
+                    onSelect={() => setSelectedId(a._id)}
+                    onEdit={(e) => { e.stopPropagation(); openEdit(a); }}
+                    onDelete={(e) => { e.stopPropagation(); handleDelete(a._id, a.name); }}
+                    onTrainingClick={(e) => { e.stopPropagation(); setTodayModalAthlete({ id: a._id, name: a.name }); }}
+                  />
+                ))}
               </div>
             )}
           </>

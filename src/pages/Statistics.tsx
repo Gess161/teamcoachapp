@@ -6,60 +6,35 @@ import {
   Target,
   Activity,
   Plus,
-  Brain,
-  Zap,
-  User,
 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  Radar,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
 import DashboardLayout from "@/shared/ui/DashboardLayout";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { PREPAREDNESS_TYPES } from "@/entities/readiness/constants";
-import IGSColorBar from "@/shared/ui/IGSColorBar";
 import ReadinessModal from "@/features/readiness-scoring";
+import TrainingVolumeChart from "@/widgets/TrainingVolumeChart";
+import PhysicalQualitiesChart from "@/widgets/PhysicalQualitiesChart";
+import PrepTypeChart from "@/widgets/PrepTypeChart";
+import LoadDistributionChart from "@/widgets/LoadDistributionChart";
+import ReadinessSection from "@/widgets/ReadinessSection";
+import PreparednessGrid from "@/widgets/PreparednessGrid";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const MONTH_NAMES = [
-  "Січ",
-  "Лют",
-  "Бер",
-  "Кві",
-  "Тра",
-  "Чер",
-  "Лип",
-  "Серп",
-  "Вер",
-  "Жов",
-  "Лис",
-  "Гру",
+  "Січ", "Лют", "Бер", "Кві", "Тра", "Чер",
+  "Лип", "Серп", "Вер", "Жов", "Лис", "Гру",
 ];
 
 const PREP_COLORS: Record<string, string> = {
-  ЗФП: "hsl(200, 70%, 50%)",
-  СФП: "hsl(270, 65%, 60%)",
-  Технічна: "hsl(45, 90%, 55%)",
-  Тактична: "hsl(20, 80%, 55%)",
-  Психологічна: "hsl(340, 75%, 55%)",
-  Теоретична: "hsl(160, 60%, 45%)",
-  Змішана: "hsl(84, 81%, 44%)",
+  ЗФП:         "hsl(200, 70%, 50%)",
+  СФП:         "hsl(270, 65%, 60%)",
+  Технічна:    "hsl(45, 90%, 55%)",
+  Тактична:    "hsl(20, 80%, 55%)",
+  Психологічна:"hsl(340, 75%, 55%)",
+  Теоретична:  "hsl(160, 60%, 45%)",
+  Змішана:     "hsl(84, 81%, 44%)",
 };
 
 // ─── Statistics Main Page ─────────────────────────────────────────────────────
@@ -85,10 +60,8 @@ const Statistics = () => {
     recovery?: number;
   }[];
   const [showReadinessModal, setShowReadinessModal] = useState(false);
-  const [selectedAthleteForRadar, setSelectedAthleteForRadar] =
-    useState<string>("sum");
+  const [selectedAthleteForRadar, setSelectedAthleteForRadar] = useState<string>("sum");
 
-  // ─── Loading guard — don't render charts until Convex has responded ─────────
   const isLoading =
     trainingsRaw === undefined ||
     athletesRaw === undefined ||
@@ -121,14 +94,10 @@ const Statistics = () => {
     }));
   }, [trainings]);
 
-  // ─── 5 physical qualities from training types ───────────────────────────────
+  // ─── 5 physical qualities ───────────────────────────────────────────────────
   const physicalQualities = useMemo(() => {
     const map: Record<string, number> = {
-      speed: 0,
-      strength: 0,
-      endurance: 0,
-      flexibility: 0,
-      coordination: 0,
+      speed: 0, strength: 0, endurance: 0, flexibility: 0, coordination: 0,
     };
     const prepToQ: Record<string, string[]> = {
       ЗФП: ["endurance", "strength"],
@@ -144,52 +113,22 @@ const Statistics = () => {
     return [
       { quality: "Швидкість", score: Math.round((map.speed / total) * 100) },
       { quality: "Сила", score: Math.round((map.strength / total) * 100) },
-      {
-        quality: "Витривалість",
-        score: Math.round((map.endurance / total) * 100),
-      },
-      {
-        quality: "Гнучкість",
-        score: Math.round((map.flexibility / total) * 100),
-      },
-      {
-        quality: "Координація",
-        score: Math.round((map.coordination / total) * 100),
-      },
+      { quality: "Витривалість", score: Math.round((map.endurance / total) * 100) },
+      { quality: "Гнучкість", score: Math.round((map.flexibility / total) * 100) },
+      { quality: "Координація", score: Math.round((map.coordination / total) * 100) },
     ];
   }, [trainings]);
 
-  // ─── Readiness radar (from readiness_scores) ───────────────────────────────
+  // ─── Readiness radar ───────────────────────────────────────────────────────
   const readinessRadar = useMemo(() => {
     if (selectedAthleteForRadar === "sum") {
-      // Average across all athletes' latest scores
-      const latestByAthlete = new Map<
-        string,
-        {
-          physical?: number;
-          technical?: number;
-          tactical?: number;
-          psychological?: number;
-          functional?: number;
-          coordination?: number;
-          recovery?: number;
-        }
-      >();
+      const latestByAthlete = new Map<string, { physical?: number; technical?: number; tactical?: number; psychological?: number; functional?: number; coordination?: number; recovery?: number }>();
       for (const score of allScores) {
         const athleteId = (score as any).athleteId as string;
-        if (!latestByAthlete.has(athleteId)) {
-          latestByAthlete.set(athleteId, score);
-        }
+        if (!latestByAthlete.has(athleteId)) latestByAthlete.set(athleteId, score);
       }
       if (latestByAthlete.size === 0) return null;
-
-      let physical = 0,
-        technical = 0,
-        tactical = 0,
-        psychological = 0,
-        functional = 0,
-        coordination = 0,
-        recovery = 0;
+      let physical = 0, technical = 0, tactical = 0, psychological = 0, functional = 0, coordination = 0, recovery = 0;
       for (const score of latestByAthlete.values()) {
         physical += score.physical ?? 0;
         technical += score.technical ?? 0;
@@ -210,9 +149,7 @@ const Statistics = () => {
         { axis: "Відновл.", value: Math.round(recovery / count) },
       ];
     } else {
-      const filtered = allScores.filter(
-        (s) => (s as any).athleteId === selectedAthleteForRadar,
-      );
+      const filtered = allScores.filter((s) => (s as any).athleteId === selectedAthleteForRadar);
       if (filtered.length === 0) return null;
       const latest = filtered[0] as any;
       return [
@@ -247,8 +184,6 @@ const Statistics = () => {
       .map(([name, value]) => ({ name, value }));
   }, [trainings]);
 
-  const GROUPS = ["Основні", "Розширені", "Додаткові"] as const;
-
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -269,9 +204,7 @@ const Statistics = () => {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-display font-bold">Статистика</h1>
-            <p className="text-muted-foreground mt-1">
-              Аналіз тренувального процесу
-            </p>
+            <p className="text-muted-foreground mt-1">Аналіз тренувального процесу</p>
           </div>
           <Button onClick={() => setShowReadinessModal(true)} className="gap-2">
             <Plus className="w-4 h-4" /> Оцінити підготовленість
@@ -284,11 +217,7 @@ const Statistics = () => {
             { label: "Спортсменів", value: summary.athletes, icon: Activity },
             { label: "Завершено", value: summary.completed, icon: BarChart3 },
             { label: "Заплановано", value: summary.planned, icon: TrendingUp },
-            {
-              label: "Всього вправ",
-              value: summary.totalExercises,
-              icon: Target,
-            },
+            { label: "Всього вправ", value: summary.totalExercises, icon: Target },
           ].map((s) => (
             <div key={s.label} className="glass-card p-4 space-y-2">
               <div className="flex items-center justify-between">
@@ -302,405 +231,24 @@ const Statistics = () => {
 
         {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Training Volume */}
-          <div className="glass-card p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <BarChart3 className="w-5 h-5 text-primary" />
-              <h2 className="font-display font-semibold">
-                Обсяг тренувань (6 міс.)
-              </h2>
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={trainingVolume}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(220,14%,18%)"
-                />
-                <XAxis
-                  dataKey="month"
-                  stroke="hsl(220,10%,50%)"
-                  fontSize={12}
-                />
-                <YAxis
-                  stroke="hsl(220,10%,50%)"
-                  fontSize={12}
-                  allowDecimals={false}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(220,18%,11%)",
-                    border: "1px solid hsl(220,14%,18%)",
-                    borderRadius: "8px",
-                    color: "hsl(0,0%,95%)",
-                  }}
-                  formatter={(v: number) => [v, "Тренувань"]}
-                />
-                <Bar
-                  dataKey="trainings"
-                  fill="hsl(84,81%,44%)"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* 5 Physical Qualities Radar */}
-          <div className="glass-card p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-5 h-5 text-primary" />
-              <h2 className="font-display font-semibold">5 фізичних якостей</h2>
-            </div>
-            <p className="text-xs text-muted-foreground mb-3">
-              Акцент завершених тренувань за видом підготовки
-            </p>
-            <ResponsiveContainer width="100%" height={210}>
-              <RadarChart data={physicalQualities}>
-                <PolarGrid stroke="hsl(220,14%,18%)" />
-                <PolarAngleAxis
-                  dataKey="quality"
-                  tick={{ fill: "hsl(220,10%,60%)", fontSize: 11 }}
-                />
-                <Radar
-                  name="%"
-                  dataKey="score"
-                  stroke="hsl(84,81%,44%)"
-                  fill="hsl(84,81%,44%)"
-                  fillOpacity={0.3}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(220,18%,11%)",
-                    border: "1px solid hsl(220,14%,18%)",
-                    borderRadius: "8px",
-                    color: "hsl(0,0%,95%)",
-                  }}
-                  formatter={(v: number) => [`${v}%`, "Акцент"]}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Prep type pie */}
-          <div className="glass-card p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Target className="w-5 h-5 text-primary" />
-              <h2 className="font-display font-semibold">Вид підготовки</h2>
-            </div>
-            {prepDistribution.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Немає тренувань з вказаним видом підготовки
-              </p>
-            ) : (
-              <div className="flex items-center gap-6">
-                <ResponsiveContainer width="50%" height={190}>
-                  <PieChart>
-                    <Pie
-                      data={prepDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={75}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {prepDistribution.map((e, i) => (
-                        <Cell key={i} fill={e.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(220,18%,11%)",
-                        border: "1px solid hsl(220,14%,18%)",
-                        borderRadius: "8px",
-                        color: "hsl(0,0%,95%)",
-                      }}
-                      formatter={(v: number) => [`${v}%`, ""]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="space-y-2">
-                  {prepDistribution.map((item) => (
-                    <div
-                      key={item.name}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <span
-                        className="w-3 h-3 rounded-full shrink-0"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="text-muted-foreground">{item.name}</span>
-                      <span className="font-medium ml-auto">{item.value}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Load levels */}
-          <div className="glass-card p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <Activity className="w-5 h-5 text-primary" />
-              <h2 className="font-display font-semibold">
-                Рівні навантаження (Платонов)
-              </h2>
-            </div>
-            {loadDistribution.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Немає тренувань з вказаним навантаженням
-              </p>
-            ) : (
-              <ResponsiveContainer width="100%" height={210}>
-                <BarChart data={loadDistribution} layout="vertical">
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="hsl(220,14%,18%)"
-                    horizontal={false}
-                  />
-                  <XAxis
-                    type="number"
-                    stroke="hsl(220,10%,50%)"
-                    fontSize={12}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    stroke="hsl(220,10%,50%)"
-                    fontSize={13}
-                    width={30}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(220,18%,11%)",
-                      border: "1px solid hsl(220,14%,18%)",
-                      borderRadius: "8px",
-                      color: "hsl(0,0%,95%)",
-                    }}
-                    formatter={(v: number) => [v, "Тренувань"]}
-                  />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {loadDistribution.map((_e, i) => {
-                      const colors = [
-                        "hsl(340,75%,55%)",
-                        "hsl(20,80%,55%)",
-                        "hsl(45,90%,55%)",
-                        "hsl(160,60%,45%)",
-                      ];
-                      return <Cell key={i} fill={colors[i % colors.length]} />;
-                    })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
+          <TrainingVolumeChart data={trainingVolume} />
+          <PhysicalQualitiesChart data={physicalQualities} />
+          <PrepTypeChart data={prepDistribution} />
+          <LoadDistributionChart data={loadDistribution} />
         </div>
 
-        {/* ─── 12 Types of Preparedness ─────────────────────────────────────── */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Brain className="w-5 h-5 text-primary" />
-              <h2 className="font-display font-semibold text-xl">
-                12 видів підготовленості (Платонов)
-              </h2>
-            </div>
-          </div>
+        {/* 12 Types of Preparedness */}
+        <PreparednessGrid />
 
-          {GROUPS.map((group) => {
-            const types = PREPAREDNESS_TYPES.filter((t) => t.group === group);
-            return (
-              <div key={group} className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
-                  {group}
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                  {types.map((t) => (
-                    <motion.div
-                      key={t.key}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="glass-card p-4 space-y-2"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{t.icon}</span>
-                          <div>
-                            <p className="font-medium text-sm">{t.label}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {t.source}
-                            </p>
-                          </div>
-                        </div>
-                        <span
-                          className="w-2.5 h-2.5 rounded-full mt-1 shrink-0"
-                          style={{ backgroundColor: t.color }}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {t.description}
-                      </p>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ─── Readiness scores radar (if data exists) ───────────────────────── */}
-        {allScores.length > 0 && (
-          <div className="glass-card p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" />
-                <h2 className="font-display font-semibold">
-                  ІГС — Індекс готовності спортсмена
-                </h2>
-              </div>
-              <select
-                value={selectedAthleteForRadar}
-                onChange={(e) => setSelectedAthleteForRadar(e.target.value)}
-                className="h-8 rounded-md bg-secondary/50 border border-border/50 px-2 text-sm text-foreground"
-              >
-                <option value="sum">Середня ІГС команди</option>
-                {athletes.map((a) => (
-                  <option key={a._id} value={a._id}>
-                    {a.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {readinessRadar ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <ResponsiveContainer width="100%" height={260}>
-                  <RadarChart data={readinessRadar}>
-                    <PolarGrid stroke="hsl(220,14%,18%)" />
-                    <PolarAngleAxis
-                      dataKey="axis"
-                      tick={{ fill: "hsl(220,10%,60%)", fontSize: 11 }}
-                    />
-                    <Radar
-                      name="Підготовленість"
-                      dataKey="value"
-                      stroke="hsl(84,81%,44%)"
-                      fill="hsl(84,81%,44%)"
-                      fillOpacity={0.3}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "hsl(220,18%,11%)",
-                        border: "1px solid hsl(220,14%,18%)",
-                        borderRadius: "8px",
-                        color: "hsl(0,0%,95%)",
-                      }}
-                      formatter={(v: number) => [`${v}/100`, ""]}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-                <div className="space-y-2">
-                  {readinessRadar.map((r) => (
-                    <div key={r.axis} className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground w-20 shrink-0">
-                        {r.axis}
-                      </span>
-                      <div className="flex-1 bg-secondary/50 rounded-full h-2">
-                        <div
-                          className="h-2 rounded-full bg-primary"
-                          style={{ width: `${r.value}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-mono font-medium w-10 text-right">
-                        {r.value}
-                      </span>
-                    </div>
-                  ))}
-                  {/* IGS */}
-                  {(() => {
-                    let igsValue: number | undefined;
-                    if (selectedAthleteForRadar === "sum") {
-                      // Sum of all athletes' latest IGS
-                      const latestByAthlete = new Map<string, any>();
-                      for (const score of allScores) {
-                        const athleteId = score.athleteId as string;
-                        if (!latestByAthlete.has(athleteId)) {
-                          latestByAthlete.set(athleteId, score);
-                        }
-                      }
-                      const sum = Array.from(latestByAthlete.values()).reduce(
-                        (acc, s) => acc + (s.igs ?? 0),
-                        0,
-                      );
-                      igsValue = Math.round(sum / latestByAthlete.size);
-                    } else {
-                      const latest = allScores.find(
-                        (s) => s.athleteId === selectedAthleteForRadar,
-                      );
-                      igsValue = latest?.igs;
-                    }
-                    if (!igsValue) return null;
-                    return (
-                      <div className="mt-4 p-4 rounded-lg bg-primary/10 space-y-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground">
-                            ІГС{" "}
-                            {selectedAthleteForRadar === "sum"
-                              ? "(Середня команди)"
-                              : "(Індекс готовності)"}
-                          </p>
-                          <p className="text-3xl font-display font-bold text-primary mt-1">
-                            {igsValue}
-                            <span className="text-sm font-normal text-muted-foreground">
-                              {selectedAthleteForRadar === "sum" ? "" : "/100"}
-                            </span>
-                          </p>
-                        </div>
-                        {selectedAthleteForRadar !== "sum" && (
-                          <IGSColorBar variant="full" />
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                          {selectedAthleteForRadar === "sum"
-                            ? `Середній рівень ${athletes.length} спортсменів`
-                            : igsValue >= 85
-                              ? "Відмінна готовність до змагань"
-                              : igsValue >= 70
-                                ? "Добра готовність"
-                                : igsValue >= 55
-                                  ? "Задовільна готовність"
-                                  : "Потребує підготовки"}
-                        </p>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Немає даних для обраного спортсмена
-              </p>
-            )}
-          </div>
-        )}
-
-        {allScores.length === 0 && (
-          <div className="glass-card p-8 text-center border border-dashed border-border/50">
-            <Brain className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
-            <p className="text-muted-foreground">
-              Оцінок підготовленості ще немає
-            </p>
-            <p className="text-sm text-muted-foreground/60 mt-1 mb-4">
-              Додайте оцінку щоб побачити ІГС та radar-діаграму підготовленості
-            </p>
-            <Button
-              onClick={() => setShowReadinessModal(true)}
-              variant="outline"
-              className="gap-2"
-            >
-              <Plus className="w-4 h-4" /> Додати оцінку
-            </Button>
-          </div>
-        )}
+        {/* Readiness Section */}
+        <ReadinessSection
+          allScores={allScores}
+          athletes={athletes}
+          onAddScore={() => setShowReadinessModal(true)}
+          selectedAthleteForRadar={selectedAthleteForRadar}
+          onAthleteChange={setSelectedAthleteForRadar}
+          readinessRadar={readinessRadar}
+        />
       </motion.div>
 
       <AnimatePresence>
