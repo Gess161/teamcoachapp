@@ -16,7 +16,7 @@ import {
   BarChart3,
   GraduationCap,
 } from "lucide-react";
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/shared/ui/DashboardLayout";
 
 interface Section {
   id: string;

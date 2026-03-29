@@ -8,7 +8,7 @@ import {
   Clock,
   Trophy,
 } from "lucide-react";
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/shared/ui/DashboardLayout";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 

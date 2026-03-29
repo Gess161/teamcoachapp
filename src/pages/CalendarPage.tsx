@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Dumbbell } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/shared/ui/DashboardLayout";
 
 const daysOfWeek = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
 const monthNames = [
