@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { User, Edit2, Trash2, ChevronRight } from "lucide-react";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -18,17 +19,17 @@ interface AthleteCardProps {
   onTrainingClick: (e: React.MouseEvent) => void;
 }
 
-const AthleteCard = ({
-  athlete,
-  activeMacro,
-  latestIGS,
-  onSelect,
-  onEdit,
-  onDelete,
-  onTrainingClick,
-}: AthleteCardProps) => {
+const AthleteCard = ({ athlete, activeMacro, latestIGS, onSelect, onEdit, onDelete, onTrainingClick }: AthleteCardProps) => {
+  const { t } = useTranslation(["team", "enums"]);
   const phase = (athlete.currentCyclePhase as CyclePhase) ?? "preparatory_general";
   const isInMacro = activeMacro?.athleteIds.includes(athlete._id as Id<"athletes">);
+
+  const getIgsLabel = (igs: number) => {
+    if (igs >= 85) return t("card.excellent");
+    if (igs >= 70) return t("card.good");
+    if (igs >= 55) return t("card.satisfactory");
+    return t("card.needsWork");
+  };
 
   return (
     <motion.div
@@ -49,16 +50,10 @@ const AthleteCard = ({
           </div>
         </div>
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={onEdit}
-            className="p-2 rounded-lg hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <button onClick={onEdit} className="p-2 rounded-lg hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors">
             <Edit2 className="w-4 h-4" />
           </button>
-          <button
-            onClick={onDelete}
-            className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-          >
+          <button onClick={onDelete} className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
@@ -66,19 +61,19 @@ const AthleteCard = ({
 
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div>
-          <p className="text-muted-foreground text-xs">Вік</p>
-          <p className="font-medium">{getAge(athlete.dateOfBirth)} р.</p>
+          <p className="text-muted-foreground text-xs">{t("card.age")}</p>
+          <p className="font-medium">{getAge(athlete.dateOfBirth)} {t("card.ageUnit")}</p>
         </div>
         <div>
-          <p className="text-muted-foreground text-xs">Кваліфікація</p>
+          <p className="text-muted-foreground text-xs">{t("card.qualification")}</p>
           <p className="font-medium">{athlete.qualification}</p>
         </div>
         <div>
-          <p className="text-muted-foreground text-xs">Кращий</p>
+          <p className="text-muted-foreground text-xs">{t("card.best")}</p>
           <p className="font-medium text-primary">{athlete.bestResult ?? "—"}</p>
         </div>
         <div>
-          <p className="text-muted-foreground text-xs">Ціль</p>
+          <p className="text-muted-foreground text-xs">{t("card.goal")}</p>
           <p className="font-medium">{athlete.targetResult ?? "—"}</p>
         </div>
       </div>
@@ -96,9 +91,7 @@ const AthleteCard = ({
             <span className="text-sm font-semibold text-primary">{latestIGS}/100</span>
           </div>
           <IGSColorBar variant="compact" />
-          <p className="text-xs text-muted-foreground text-center">
-            {latestIGS >= 85 ? "Відмінна" : latestIGS >= 70 ? "Добра" : latestIGS >= 55 ? "Задовільна" : "Потребує роботи"}
-          </p>
+          <p className="text-xs text-muted-foreground text-center">{getIgsLabel(latestIGS)}</p>
         </div>
       )}
 
@@ -106,9 +99,9 @@ const AthleteCard = ({
         <button
           onClick={onTrainingClick}
           className={`text-xs px-2 py-1 rounded-md font-medium hover:brightness-125 transition-all ${cycleLabels[phase]?.color ?? "bg-muted text-muted-foreground"}`}
-          title="Тренування сьогодні"
+          title={t("card.todayTraining")}
         >
-          {cycleLabels[phase]?.label ?? phase}
+          {t(`enums:cyclePhase.${phase}`, cycleLabels[phase]?.label ?? phase)}
         </button>
         <ChevronRight className="w-4 h-4 text-muted-foreground" />
       </div>

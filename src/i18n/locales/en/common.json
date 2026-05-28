@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "team": "Team",
+    "training": "Training",
+    "tests": "DYUSS Tests",
+    "history": "History",
+    "calendar": "Calendar",
+    "statistics": "Statistics",
+    "learn": "Learn",
+    "logout": "Logout"
+  },
+  "sidebar": {
+    "appName": "AthletePro",
+    "coachPanel": "Coach Panel"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "done": "Done",
+    "create": "Create",
+    "update": "Update",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "back": "← Back to list",
+    "clear": "Clear"
+  },
+  "language": {
+    "label": "Language",
+    "en": "EN",
+    "uk": "UA",
+    "ru": "RU"
+  }
+}

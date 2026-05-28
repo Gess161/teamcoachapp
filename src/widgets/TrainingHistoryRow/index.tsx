@@ -1,15 +1,9 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  History as HistoryIcon,
-  Calendar,
-  Users,
-  CheckCircle2,
-  Clock,
-  Layers,
-  User,
-  ChevronDown,
-  ChevronRight,
+  History as HistoryIcon, Calendar, Users, CheckCircle2,
+  Clock, Layers, User, ChevronDown, ChevronRight,
 } from "lucide-react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { MacroPhaseKey } from "@/entities/macrocycle/types";
@@ -17,20 +11,20 @@ import TrainingTypeModal from "@/widgets/TrainingTypeModal";
 import AthleteProfileModal from "@/widgets/AthleteProfileModal";
 
 const PREP_TYPE_COLORS: Record<string, string> = {
-  ЗФП:          "bg-blue-500/20 text-blue-400",
-  СФП:          "bg-violet-500/20 text-violet-400",
-  Технічна:     "bg-yellow-500/20 text-yellow-400",
-  Тактична:     "bg-orange-500/20 text-orange-400",
+  ЗФП: "bg-blue-500/20 text-blue-400",
+  СФП: "bg-violet-500/20 text-violet-400",
+  Технічна: "bg-yellow-500/20 text-yellow-400",
+  Тактична: "bg-orange-500/20 text-orange-400",
   Психологічна: "bg-pink-500/20 text-pink-400",
-  Теоретична:   "bg-cyan-500/20 text-cyan-400",
-  Змішана:      "bg-primary/20 text-primary",
+  Теоретична: "bg-cyan-500/20 text-cyan-400",
+  Змішана: "bg-primary/20 text-primary",
 };
 
 const LOAD_LEVEL_COLORS: Record<string, string> = {
-  В:  "bg-red-500/20 text-red-400",
+  В: "bg-red-500/20 text-red-400",
   ЗН: "bg-orange-500/20 text-orange-400",
-  С:  "bg-yellow-500/20 text-yellow-400",
-  М:  "bg-green-500/20 text-green-400",
+  С: "bg-yellow-500/20 text-yellow-400",
+  М: "bg-green-500/20 text-green-400",
 };
 
 type TrainingRow = {
@@ -53,19 +47,13 @@ interface TrainingHistoryRowProps {
   index: number;
 }
 
-const TrainingHistoryRow = ({
-  training,
-  athleteMap,
-  activeMacroPhase,
-  index,
-}: TrainingHistoryRowProps) => {
+const TrainingHistoryRow = ({ training, athleteMap, activeMacroPhase, index }: TrainingHistoryRowProps) => {
+  const { t } = useTranslation(["history", "enums"]);
   const [expanded, setExpanded] = useState(false);
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [profileAthlete, setProfileAthlete] = useState<AthleteDoc | null>(null);
 
-  const participants = training.athleteIds
-    .map((id) => athleteMap.get(id))
-    .filter(Boolean) as AthleteDoc[];
+  const participants = training.athleteIds.map((id) => athleteMap.get(id)).filter(Boolean) as AthleteDoc[];
 
   return (
     <>
@@ -80,56 +68,38 @@ const TrainingHistoryRow = ({
             <button
               onClick={() => setShowTypeModal(true)}
               className="flex items-center gap-2 hover:text-primary transition-colors text-left group"
-              title="Переглянути типи підготовки"
+              title={t("viewType")}
             >
               <HistoryIcon className="w-4 h-4 text-primary/60 shrink-0 group-hover:text-primary" />
-              <span className="font-medium text-sm underline-offset-2 group-hover:underline">
-                {training.name}
-              </span>
+              <span className="font-medium text-sm underline-offset-2 group-hover:underline">{training.name}</span>
             </button>
             {participants.length > 0 && (
-              <button
-                onClick={() => setExpanded((v) => !v)}
-                className="ml-1 text-muted-foreground hover:text-foreground"
-                title="Учасники"
-              >
-                {expanded
-                  ? <ChevronDown className="w-3.5 h-3.5" />
-                  : <ChevronRight className="w-3.5 h-3.5" />}
+              <button onClick={() => setExpanded((v) => !v)} className="ml-1 text-muted-foreground hover:text-foreground">
+                {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
               </button>
             )}
           </div>
         </td>
         <td className="px-5 py-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" /> {training.date}
-          </span>
+          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {training.date}</span>
         </td>
         <td className="px-5 py-4">
           {training.preparationType ? (
-            <span
-              className={`text-xs px-2 py-1 rounded-md font-medium flex items-center gap-1 w-fit ${
-                PREP_TYPE_COLORS[training.preparationType] ?? "bg-secondary/50 text-muted-foreground"
-              }`}
-            >
-              <Layers className="w-3 h-3" />{training.preparationType}
+            <span className={`text-xs px-2 py-1 rounded-md font-medium flex items-center gap-1 w-fit ${PREP_TYPE_COLORS[training.preparationType] ?? "bg-secondary/50 text-muted-foreground"}`}>
+              <Layers className="w-3 h-3" />{t(`enums:prepType.${training.preparationType}`, training.preparationType)}
             </span>
           ) : (
             <button
               onClick={() => setShowTypeModal(true)}
               className="text-xs px-2 py-1 rounded-md border border-dashed border-border/50 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
             >
-              + Вказати тип
+              {t("specifyType")}
             </button>
           )}
         </td>
         <td className="px-5 py-4">
           {training.loadLevel ? (
-            <span
-              className={`text-xs px-2 py-1 rounded-md font-medium w-fit block ${
-                LOAD_LEVEL_COLORS[training.loadLevel] ?? "bg-secondary/50 text-muted-foreground"
-              }`}
-            >
+            <span className={`text-xs px-2 py-1 rounded-md font-medium w-fit block ${LOAD_LEVEL_COLORS[training.loadLevel] ?? "bg-secondary/50 text-muted-foreground"}`}>
               {training.loadLevel}
             </span>
           ) : (
@@ -137,19 +107,17 @@ const TrainingHistoryRow = ({
           )}
         </td>
         <td className="px-5 py-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Users className="w-3 h-3" /> {training.athleteIds.length}
-          </span>
+          <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {training.athleteIds.length}</span>
         </td>
         <td className="px-5 py-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" /> {training.exercises.length} вправ
-            {training.durationMinutes && ` · ${training.durationMinutes} хв`}
+            <Clock className="w-3 h-3" /> {training.exercises.length} {t("exercises")}
+            {training.durationMinutes && ` · ${training.durationMinutes} ${t("minutes")}`}
           </span>
         </td>
         <td className="px-5 py-4">
           <span className="text-xs px-2 py-1 rounded-md bg-primary/10 text-primary font-medium flex items-center gap-1 w-fit">
-            <CheckCircle2 className="w-3 h-3" /> Завершено
+            <CheckCircle2 className="w-3 h-3" /> {t("completedStatus")}
           </span>
         </td>
       </motion.tr>
@@ -166,7 +134,7 @@ const TrainingHistoryRow = ({
               >
                 <div className="bg-secondary/20 rounded-lg p-3">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-                    Учасники ({participants.length})
+                    {t("participants", { count: participants.length })}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {participants.map((a) => (
@@ -189,20 +157,13 @@ const TrainingHistoryRow = ({
 
       <AnimatePresence>
         {showTypeModal && (
-          <TrainingTypeModal
-            training={training}
-            activeMacroPhase={activeMacroPhase}
-            onClose={() => setShowTypeModal(false)}
-          />
+          <TrainingTypeModal training={training} activeMacroPhase={activeMacroPhase} onClose={() => setShowTypeModal(false)} />
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {profileAthlete && (
-          <AthleteProfileModal
-            athlete={profileAthlete}
-            onClose={() => setProfileAthlete(null)}
-          />
+          <AthleteProfileModal athlete={profileAthlete} onClose={() => setProfileAthlete(null)} />
         )}
       </AnimatePresence>
     </>

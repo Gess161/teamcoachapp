@@ -1,0 +1,84 @@
+{
+  "title": "Тренування",
+  "subtitle": "Створюйте, оцінюйте та проводьте тренування",
+  "newTraining": "Нове тренування",
+  "allTrainings": "Всі тренування",
+  "details": "Деталі тренування",
+  "noTrainings": "Немає тренувань. Створіть перше!",
+  "selectTraining": "Оберіть тренування зі списку",
+  "athleteRemoved": "Спортсмена видалено",
+  "started": "Тренування розпочато!",
+  "completedToast": "Тренування завершено! ✅",
+  "exercises": "вправ",
+  "athletes": "спортсменів",
+  "criteria": "критерії",
+  "rest": "відп.",
+  "form": {
+    "new": "Нове тренування",
+    "edit": "Редагування тренування",
+    "name": "Назва",
+    "namePlaceholder": "Силове тренування",
+    "type": "Тип",
+    "load": "Навантаження",
+    "prepType": "Вид підготовки (Платонов)",
+    "date": "Дата",
+    "time": "Час (опціонально)",
+    "description": "Опис",
+    "descriptionPlaceholder": "Опис тренування...",
+    "created": "Тренування створено",
+    "updated": "Тренування оновлено"
+  },
+  "card": {
+    "start": "Розпочати",
+    "complete": "Завершити"
+  },
+  "detail": {
+    "participants": "Учасники ({{count}})",
+    "noParticipants": "Спортсмени не додані",
+    "criteria": "Критерії оцінювання",
+    "noCriteria": "Критерії не задані",
+    "exerciseCriteria": "Критерії вправи",
+    "noCriterionForExercise": "Без критеріїв",
+    "addExercise": "Додати вправу",
+    "unknown": "Невідомий",
+    "criterion": "Критерій"
+  },
+  "athletesSelector": {
+    "title": "Додати спортсменів",
+    "notFound": "Спортсменів не знайдено",
+    "added": "Спортсмена додано до тренування",
+    "removed": "Спортсмена видалено"
+  },
+  "criteriaManager": {
+    "title": "Новий критерій",
+    "forExercise": "Критерій для конкретної вправи",
+    "global": "Загальний критерій тренування",
+    "name": "Назва критерію",
+    "namePlaceholder": "Техніка виконання",
+    "description": "Опис",
+    "descriptionPlaceholder": "Що саме оцінюється...",
+    "scale": "Шкала",
+    "weight": "Вага (1-5)",
+    "added": "Критерій додано",
+    "addButton": "Додати критерій"
+  },
+  "exerciseManager": {
+    "title": "Тести ДЮСШ",
+    "selectTest": "Оберіть тест щоб додати як вправу до тренування:",
+    "noTests": "Тестів не знайдено",
+    "addManual": "Або додати вручну:",
+    "namePlaceholder": "Назва",
+    "descPlaceholder": "Опис",
+    "setsPlaceholder": "Підходи",
+    "repsPlaceholder": "Повтори/дистанція",
+    "restPlaceholder": "Відпочинок (сек)",
+    "addManualBtn": "Додати вправу вручну",
+    "added": "Вправу додано"
+  },
+  "scaleOptions": {
+    "passFail": "прохідний/непрохідний",
+    "time": "час (с)",
+    "distance": "відстань (м)",
+    "weight": "вага (кг)"
+  }
+}

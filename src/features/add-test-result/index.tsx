@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useMutation } from "convex/react";
@@ -17,6 +18,7 @@ interface AddTestResultProps {
 }
 
 const AddTestResult = ({ athleteId, testId, testName, testUnit, onClose }: AddTestResultProps) => {
+  const { t } = useTranslation(["tests", "common"]);
   const [value, setValue] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
@@ -27,23 +29,16 @@ const AddTestResult = ({ athleteId, testId, testName, testUnit, onClose }: AddTe
   const handleSave = async () => {
     const numVal = parseFloat(value);
     if (isNaN(numVal)) {
-      toast({ description: "Введіть числовий результат", variant: "destructive" });
+      toast({ description: t("addResult.invalidInput"), variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      await createResult({
-        athleteId,
-        testId,
-        date,
-        value: numVal,
-        notes: notes || undefined,
-        testingContext: "поточне",
-      });
-      toast({ description: "Результат записано!" });
+      await createResult({ athleteId, testId, date, value: numVal, notes: notes || undefined, testingContext: "поточне" });
+      toast({ description: t("addResult.saved") });
       onClose();
     } catch {
-      toast({ description: "Помилка при збереженні", variant: "destructive" });
+      toast({ description: t("addResult.saveError"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -57,7 +52,7 @@ const AddTestResult = ({ athleteId, testId, testName, testUnit, onClose }: AddTe
         className="glass-card p-6 w-full max-w-md space-y-4"
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-display font-semibold text-lg">Записати результат</h3>
+          <h3 className="font-display font-semibold text-lg">{t("addResult.title")}</h3>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>
@@ -66,36 +61,28 @@ const AddTestResult = ({ athleteId, testId, testName, testUnit, onClose }: AddTe
         <div className="space-y-3">
           <div>
             <label className="text-xs text-muted-foreground block mb-1">
-              Результат ({testUnit})
+              {t("addResult.result", { unit: testUnit })}
             </label>
             <Input
-              type="number"
-              step="0.01"
-              value={value}
+              type="number" step="0.01" value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="напр. 4.5"
+              placeholder={t("addResult.placeholder")}
               autoFocus
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground block mb-1">Дата тестування</label>
+            <label className="text-xs text-muted-foreground block mb-1">{t("addResult.testDate")}</label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground block mb-1">
-              Примітки (необов'язково)
-            </label>
-            <Input
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Умови, стан спортсмена..."
-            />
+            <label className="text-xs text-muted-foreground block mb-1">{t("addResult.notes")}</label>
+            <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("addResult.notesPlaceholder")} />
           </div>
         </div>
         <div className="flex gap-2 pt-2">
-          <Button variant="outline" onClick={onClose} className="flex-1">Скасувати</Button>
+          <Button variant="outline" onClick={onClose} className="flex-1">{t("common:actions.cancel")}</Button>
           <Button onClick={handleSave} disabled={loading} className="flex-1">
-            {loading ? "Збереження..." : "Зберегти"}
+            {loading ? t("common:actions.saving") : t("common:actions.save")}
           </Button>
         </div>
       </motion.div>

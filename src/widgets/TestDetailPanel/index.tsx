@@ -1,34 +1,15 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence } from "framer-motion";
-import {
-  ClipboardCheck,
-  Plus,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-} from "lucide-react";
+import { ClipboardCheck, Plus, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import AddTestResult from "@/features/add-test-result";
-
-const QUALITY_LABELS: Record<string, string> = {
-  speed: "Швидкість",
-  strength: "Сила",
-  endurance: "Витривалість",
-  flexibility: "Гнучкість",
-  coordination: "Координація",
-};
 
 const QUALITY_COLORS: Record<string, string> = {
   speed: "hsl(45, 90%, 55%)",
@@ -36,13 +17,6 @@ const QUALITY_COLORS: Record<string, string> = {
   endurance: "hsl(200, 70%, 50%)",
   flexibility: "hsl(160, 60%, 45%)",
   coordination: "hsl(270, 65%, 60%)",
-};
-
-const NORM_LEVEL_LABELS: Record<string, string> = {
-  excellent: "Відмінно",
-  good: "Добре",
-  satisfactory: "Задовільно",
-  below_norm: "Нижче норми",
 };
 
 const NORM_LEVEL_STYLES: Record<string, string> = {
@@ -65,9 +39,9 @@ interface TestDetailPanelProps {
 }
 
 const TestDetailPanel = ({ athleteId, test, onAddResult }: TestDetailPanelProps) => {
+  const { t } = useTranslation("tests");
   const [showAddModal, setShowAddModal] = useState(false);
-  const results =
-    useQuery(api.testResults.getByAthleteAndTest, { athleteId, testId: test._id }) ?? [];
+  const results = useQuery(api.testResults.getByAthleteAndTest, { athleteId, testId: test._id }) ?? [];
 
   const chartData = results.map((r) => ({
     date: r.date,
@@ -94,19 +68,19 @@ const TestDetailPanel = ({ athleteId, test, onAddResult }: TestDetailPanelProps)
           <div>
             <h3 className="font-display font-semibold">{test.name}</h3>
             <p className="text-sm text-muted-foreground">
-              {QUALITY_LABELS[test.physicalQuality]} · одиниця: {test.unit}
-              {test.lowerIsBetter && " · менше = краще"}
+              {t(`qualities.${test.physicalQuality}`, test.physicalQuality)} · {t("detail.unit")} {test.unit}
+              {test.lowerIsBetter && ` · ${t("detail.lowerBetter")}`}
             </p>
           </div>
           <Button size="sm" onClick={() => { setShowAddModal(true); onAddResult(); }} className="gap-1">
-            <Plus className="w-4 h-4" /> Результат
+            <Plus className="w-4 h-4" /> {t("detail.addResult")}
           </Button>
         </div>
 
         {latest && (
           <div className="flex gap-4">
             <div className="glass-card p-4 flex-1 text-center">
-              <p className="text-xs text-muted-foreground mb-1">Останній результат</p>
+              <p className="text-xs text-muted-foreground mb-1">{t("detail.latest")}</p>
               <p className="text-2xl font-display font-bold">
                 {latest.value}{" "}
                 <span className="text-sm font-normal text-muted-foreground">{test.unit}</span>
@@ -115,25 +89,25 @@ const TestDetailPanel = ({ athleteId, test, onAddResult }: TestDetailPanelProps)
             </div>
             {latest.normLevel && (
               <div className="glass-card p-4 flex-1 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Норматив</p>
+                <p className="text-xs text-muted-foreground mb-1">{t("detail.norm")}</p>
                 <span className={`text-sm font-semibold px-3 py-1 rounded-full ${NORM_LEVEL_STYLES[latest.normLevel] ?? ""}`}>
-                  {NORM_LEVEL_LABELS[latest.normLevel]}
+                  {t(`normLevel.${latest.normLevel}`, latest.normLevel)}
                 </span>
                 {latest.normPercent !== undefined && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {Math.round(latest.normPercent)}% від норми "Добре"
+                    {Math.round(latest.normPercent)}% {t("detail.fromNorm")}
                   </p>
                 )}
               </div>
             )}
             {trend && (
               <div className="glass-card p-4 flex-1 text-center">
-                <p className="text-xs text-muted-foreground mb-1">Динаміка</p>
+                <p className="text-xs text-muted-foreground mb-1">{t("detail.trend")}</p>
                 {trend === "up" && <TrendingUp className="w-7 h-7 text-primary mx-auto" />}
                 {trend === "down" && <TrendingDown className="w-7 h-7 text-destructive mx-auto" />}
                 {trend === "flat" && <Minus className="w-7 h-7 text-muted-foreground mx-auto" />}
                 <p className="text-xs text-muted-foreground mt-1">
-                  vs попереднє: {prev ? prev.value : "—"} {test.unit}
+                  {t("detail.vs")} {prev ? prev.value : "—"} {test.unit}
                 </p>
               </div>
             )}
@@ -142,36 +116,29 @@ const TestDetailPanel = ({ athleteId, test, onAddResult }: TestDetailPanelProps)
 
         {chartData.length >= 2 ? (
           <div className="glass-card p-4">
-            <p className="text-xs font-medium text-muted-foreground mb-3">Динаміка результатів</p>
+            <p className="text-xs font-medium text-muted-foreground mb-3">{t("detail.dynamics")}</p>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 18%)" />
                 <XAxis dataKey="date" stroke="hsl(220, 10%, 50%)" fontSize={11} />
                 <YAxis stroke="hsl(220, 10%, 50%)" fontSize={11} />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(220, 18%, 11%)",
-                    border: "1px solid hsl(220, 14%, 18%)",
-                    borderRadius: "8px",
-                    color: "hsl(0, 0%, 95%)",
-                  }}
-                  formatter={(v: number) => [`${v} ${test.unit}`, "Результат"]}
+                  contentStyle={{ backgroundColor: "hsl(220, 18%, 11%)", border: "1px solid hsl(220, 14%, 18%)", borderRadius: "8px", color: "hsl(0, 0%, 95%)" }}
+                  formatter={(v: number) => [`${v} ${test.unit}`, t("detail.latest")]}
                 />
-                <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={{ r: 4, fill: color }} name="Результат" />
+                <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={{ r: 4, fill: color }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         ) : chartData.length === 1 ? (
           <div className="glass-card p-4 text-center text-sm text-muted-foreground">
-            Потрібно щонайменше 2 виміри для відображення графіка
+            {t("detail.minTwoMeasurements")}
           </div>
         ) : (
           <div className="glass-card p-8 text-center">
             <ClipboardCheck className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-muted-foreground text-sm">Ще немає результатів</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">
-              Натисніть «Результат» щоб додати перший вимір
-            </p>
+            <p className="text-muted-foreground text-sm">{t("detail.noResults")}</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">{t("detail.noResultsHint")}</p>
           </div>
         )}
 
@@ -180,7 +147,7 @@ const TestDetailPanel = ({ athleteId, test, onAddResult }: TestDetailPanelProps)
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/50">
-                  {["Дата", "Результат", "Норматив", "% норми", "Примітки"].map((h) => (
+                  {[t("detail.tableDate"), t("detail.tableResult"), t("detail.tableNorm"), t("detail.tableNormPct"), t("detail.tableNotes")].map((h) => (
                     <th key={h} className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">{h}</th>
                   ))}
                 </tr>
@@ -193,7 +160,7 @@ const TestDetailPanel = ({ athleteId, test, onAddResult }: TestDetailPanelProps)
                     <td className="px-4 py-2">
                       {r.normLevel && (
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${NORM_LEVEL_STYLES[r.normLevel] ?? ""}`}>
-                          {NORM_LEVEL_LABELS[r.normLevel]}
+                          {t(`normLevel.${r.normLevel}`, r.normLevel)}
                         </span>
                       )}
                     </td>

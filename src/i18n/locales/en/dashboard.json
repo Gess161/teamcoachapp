@@ -1,0 +1,21 @@
+{
+  "greeting": "Hello, Coach!",
+  "subtitle": "Here's an overview of your team and training",
+  "stats": {
+    "athletes": "Athletes",
+    "athletesNote": "in the team",
+    "completed": "Sessions completed",
+    "completedNote": "total finished",
+    "planned": "Planned",
+    "plannedNote": "this week",
+    "total": "Total trainings",
+    "totalNote": "in the system"
+  },
+  "recent": "Recent trainings",
+  "upcoming": "Upcoming trainings",
+  "noTrainings": "No trainings yet",
+  "noUpcoming": "No planned trainings",
+  "exercises": "exercises",
+  "athletesSuffix": "ath.",
+  "loadPrefix": "load"
+}

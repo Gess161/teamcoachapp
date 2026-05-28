@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, X } from "lucide-react";
 import { useMutation } from "convex/react";
@@ -15,23 +16,24 @@ import { scaleOptions } from "@/entities/training/constants";
 interface CriteriaManagerProps {
   trainingId: Id<"trainings">;
   exerciseId: string | undefined;
-  training: {
-    exercises: { id: string; criteria: Criterion[] }[];
-    globalCriteria: Criterion[];
-  };
+  training: { exercises: { id: string; criteria: Criterion[] }[]; globalCriteria: Criterion[] };
   onClose: () => void;
 }
 
 const CriteriaManager = ({ trainingId, exerciseId, training, onClose }: CriteriaManagerProps) => {
+  const { t } = useTranslation(["training", "common"]);
   const updateTraining = useMutation(api.trainings.update);
   const { toast } = useToast();
 
-  const [newCriterion, setNewCriterion] = useState({
-    name: "",
-    description: "",
-    scale: "1-10",
-    weight: "3",
-  });
+  const [newCriterion, setNewCriterion] = useState({ name: "", description: "", scale: "1-10", weight: "3" });
+
+  const getScaleLabel = (s: string) => {
+    if (s === "прохідний/непрохідний") return t("scaleOptions.passFail");
+    if (s === "час (с)") return t("scaleOptions.time");
+    if (s === "відстань (м)") return t("scaleOptions.distance");
+    if (s === "вага (кг)") return t("scaleOptions.weight");
+    return s;
+  };
 
   const addCriterion = async () => {
     if (!newCriterion.name) return;
@@ -48,63 +50,54 @@ const CriteriaManager = ({ trainingId, exerciseId, training, onClose }: Criteria
       await updateTraining({
         id: trainingId,
         exercises: training.exercises.map((e) =>
-          e.id === exerciseId
-            ? { ...e, criteria: [...e.criteria, criterion] }
-            : e,
+          e.id === exerciseId ? { ...e, criteria: [...e.criteria, criterion] } : e
         ),
       });
     } else {
-      await updateTraining({
-        id: trainingId,
-        globalCriteria: [...training.globalCriteria, criterion],
-      });
+      await updateTraining({ id: trainingId, globalCriteria: [...training.globalCriteria, criterion] });
     }
     setNewCriterion({ name: "", description: "", scale: "1-10", weight: "3" });
-    toast({ title: "Критерій додано" });
+    toast({ title: t("criteriaManager.added") });
     onClose();
   };
 
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.95 }}
-          animate={{ scale: 1 }}
-          exit={{ scale: 0.95 }}
+          initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
           className="glass-card p-6 w-full max-w-md space-y-5"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between">
             <h2 className="font-display font-bold text-xl flex items-center gap-2">
-              <Star className="w-5 h-5 text-chart-4" /> Новий критерій
+              <Star className="w-5 h-5 text-chart-4" /> {t("criteriaManager.title")}
             </h2>
             <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
               <X className="w-5 h-5" />
             </button>
           </div>
           <p className="text-sm text-muted-foreground">
-            {exerciseId ? "Критерій для конкретної вправи" : "Загальний критерій тренування"}
+            {exerciseId ? t("criteriaManager.forExercise") : t("criteriaManager.global")}
           </p>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">Назва критерію</Label>
+              <Label className="text-sm text-muted-foreground">{t("criteriaManager.name")}</Label>
               <Input
-                placeholder="Техніка виконання"
+                placeholder={t("criteriaManager.namePlaceholder")}
                 value={newCriterion.name}
                 onChange={(e) => setNewCriterion({ ...newCriterion, name: e.target.value })}
                 className="bg-secondary/50 border-border/50"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">Опис</Label>
+              <Label className="text-sm text-muted-foreground">{t("criteriaManager.description")}</Label>
               <Textarea
-                placeholder="Що саме оцінюється..."
+                placeholder={t("criteriaManager.descriptionPlaceholder")}
                 value={newCriterion.description}
                 onChange={(e) => setNewCriterion({ ...newCriterion, description: e.target.value })}
                 className="bg-secondary/50 border-border/50 min-h-[50px]"
@@ -112,23 +105,21 @@ const CriteriaManager = ({ trainingId, exerciseId, training, onClose }: Criteria
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-sm text-muted-foreground">Шкала</Label>
+                <Label className="text-sm text-muted-foreground">{t("criteriaManager.scale")}</Label>
                 <select
                   value={newCriterion.scale}
                   onChange={(e) => setNewCriterion({ ...newCriterion, scale: e.target.value })}
                   className="w-full h-10 rounded-md bg-secondary/50 border border-border/50 px-3 text-sm text-foreground"
                 >
                   {scaleOptions.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s}>{getScaleLabel(s)}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm text-muted-foreground">Вага (1-5)</Label>
+                <Label className="text-sm text-muted-foreground">{t("criteriaManager.weight")}</Label>
                 <Input
-                  type="number"
-                  min="1"
-                  max="5"
+                  type="number" min="1" max="5"
                   value={newCriterion.weight}
                   onChange={(e) => setNewCriterion({ ...newCriterion, weight: e.target.value })}
                   className="bg-secondary/50 border-border/50"
@@ -137,14 +128,9 @@ const CriteriaManager = ({ trainingId, exerciseId, training, onClose }: Criteria
             </div>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={onClose} className="flex-1">
-              Скасувати
-            </Button>
-            <Button
-              onClick={addCriterion}
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Додати критерій
+            <Button variant="outline" onClick={onClose} className="flex-1">{t("common:actions.cancel")}</Button>
+            <Button onClick={addCriterion} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+              {t("criteriaManager.addButton")}
             </Button>
           </div>
         </motion.div>

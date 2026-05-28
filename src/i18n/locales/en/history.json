@@ -1,0 +1,30 @@
+{
+  "title": "Training history",
+  "subtitle": "{{count}} records · Click training name → preparation type analysis · Click → to expand participants",
+  "currentPhase": "Current phase:",
+  "noCompleted": "No completed trainings yet",
+  "noCompletedHint": "Change training status to \"Completed\" in the Training section",
+  "table": {
+    "training": "Training",
+    "date": "Date",
+    "prepType": "Prep. type",
+    "load": "Load",
+    "athletes": "Athletes",
+    "duration": "Duration",
+    "status": "Status"
+  },
+  "specifyType": "+ Specify type",
+  "exercises": "exercises",
+  "minutes": "min",
+  "completedStatus": "Completed",
+  "participants": "Participants ({{count}})",
+  "viewType": "View preparation types",
+  "typeModal": {
+    "prepTypeSubtitle": "Preparation type by Platonov",
+    "recommendation": "Recommended distribution by Platonov (% of weekly volume)",
+    "currentPhase": "Current phase",
+    "currentType": "Current:",
+    "typeTitle": "Preparation type for this training",
+    "saveHint": "Click to change and save"
+  }
+}

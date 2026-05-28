@@ -1,0 +1,84 @@
+{
+  "title": "Training",
+  "subtitle": "Create, assess and run training sessions",
+  "newTraining": "New training",
+  "allTrainings": "All trainings",
+  "details": "Training details",
+  "noTrainings": "No trainings. Create your first!",
+  "selectTraining": "Select a training from the list",
+  "athleteRemoved": "Athlete removed",
+  "started": "Training started!",
+  "completedToast": "Training completed! ✅",
+  "exercises": "exercises",
+  "athletes": "athletes",
+  "criteria": "criteria",
+  "rest": "rest",
+  "form": {
+    "new": "New training",
+    "edit": "Edit training",
+    "name": "Name",
+    "namePlaceholder": "Strength training",
+    "type": "Type",
+    "load": "Load level",
+    "prepType": "Preparation type (Platonov)",
+    "date": "Date",
+    "time": "Time (optional)",
+    "description": "Description",
+    "descriptionPlaceholder": "Training description...",
+    "created": "Training created",
+    "updated": "Training updated"
+  },
+  "card": {
+    "start": "Start",
+    "complete": "Finish"
+  },
+  "detail": {
+    "participants": "Participants ({{count}})",
+    "noParticipants": "No athletes added",
+    "criteria": "Assessment criteria",
+    "noCriteria": "No criteria set",
+    "exerciseCriteria": "Exercise criteria",
+    "noCriterionForExercise": "No criteria",
+    "addExercise": "Add exercise",
+    "unknown": "Unknown",
+    "criterion": "Criterion"
+  },
+  "athletesSelector": {
+    "title": "Add athletes",
+    "notFound": "No athletes found",
+    "added": "Athlete added to training",
+    "removed": "Athlete removed"
+  },
+  "criteriaManager": {
+    "title": "New criterion",
+    "forExercise": "Criterion for a specific exercise",
+    "global": "Global training criterion",
+    "name": "Criterion name",
+    "namePlaceholder": "Technique quality",
+    "description": "Description",
+    "descriptionPlaceholder": "What exactly is assessed...",
+    "scale": "Scale",
+    "weight": "Weight (1-5)",
+    "added": "Criterion added",
+    "addButton": "Add criterion"
+  },
+  "exerciseManager": {
+    "title": "DYUSS Tests",
+    "selectTest": "Select a test to add as an exercise:",
+    "noTests": "No tests found",
+    "addManual": "Or add manually:",
+    "namePlaceholder": "Name",
+    "descPlaceholder": "Description",
+    "setsPlaceholder": "Sets",
+    "repsPlaceholder": "Reps/distance",
+    "restPlaceholder": "Rest (sec)",
+    "addManualBtn": "Add exercise manually",
+    "added": "Exercise added"
+  },
+  "scaleOptions": {
+    "passFail": "pass/fail",
+    "time": "time (s)",
+    "distance": "distance (m)",
+    "weight": "weight (kg)"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "greeting": "Привіт, Тренере!",
+  "subtitle": "Ось огляд вашої команди та тренувань",
+  "stats": {
+    "athletes": "Спортсменів",
+    "athletesNote": "в команді",
+    "completed": "Тренувань проведено",
+    "completedNote": "всього завершено",
+    "planned": "Заплановано",
+    "plannedNote": "на цьому тижні",
+    "total": "Всього тренувань",
+    "totalNote": "в системі"
+  },
+  "recent": "Останні тренування",
+  "upcoming": "Найближчі тренування",
+  "noTrainings": "Ще немає тренувань",
+  "noUpcoming": "Немає запланованих тренувань",
+  "exercises": "вправ",
+  "athletesSuffix": "сп.",
+  "loadPrefix": "навант."
+}

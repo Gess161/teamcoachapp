@@ -1,0 +1,54 @@
+{
+  "title": "DYUSS Tests",
+  "subtitle": "Standards and performance dynamics · {{count}} tests",
+  "athletes": "Athletes",
+  "noAthletes": "No athletes yet",
+  "selectAthlete": "Select an athlete on the left",
+  "selectAthleteHint": "to view standards and dynamics",
+  "backToTests": "← Back to tests",
+  "all": "All",
+  "noResults": "No results",
+  "qualities": {
+    "speed": "Speed",
+    "strength": "Strength",
+    "endurance": "Endurance",
+    "flexibility": "Flexibility",
+    "coordination": "Coordination"
+  },
+  "normLevel": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "satisfactory": "Satisfactory",
+    "below_norm": "Below standard"
+  },
+  "detail": {
+    "latest": "Latest result",
+    "norm": "Standard",
+    "trend": "Trend",
+    "dynamics": "Performance dynamics",
+    "fromNorm": "% of \"Good\" standard",
+    "vs": "vs previous:",
+    "lowerBetter": "lower = better",
+    "unit": "unit:",
+    "minTwoMeasurements": "At least 2 measurements required to display the chart",
+    "noResults": "No results yet",
+    "noResultsHint": "Click \"Result\" to add the first measurement",
+    "tableDate": "Date",
+    "tableResult": "Result",
+    "tableNorm": "Standard",
+    "tableNormPct": "% norm",
+    "tableNotes": "Notes",
+    "addResult": "Result"
+  },
+  "addResult": {
+    "title": "Record result",
+    "result": "Result ({{unit}})",
+    "testDate": "Test date",
+    "notes": "Notes (optional)",
+    "notesPlaceholder": "Conditions, athlete's state...",
+    "placeholder": "e.g. 4.5",
+    "saved": "Result recorded!",
+    "invalidInput": "Enter a numeric result",
+    "saveError": "Error saving"
+  }
+}

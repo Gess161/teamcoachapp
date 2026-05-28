@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Dumbbell, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
+  const { t } = useTranslation("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,14 +21,13 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Mock login - will be replaced with Cloud auth
     setTimeout(() => {
       if (email && password) {
         localStorage.setItem("coach_auth", "true");
-        toast({ title: "Вхід успішний", description: "Ласкаво просимо, тренере!" });
+        toast({ title: t("loginSuccess"), description: t("welcome") });
         navigate("/dashboard");
       } else {
-        toast({ title: "Помилка", description: "Заповніть всі поля", variant: "destructive" });
+        toast({ title: t("error"), description: t("fillAllFields"), variant: "destructive" });
       }
       setIsLoading(false);
     }, 800);
@@ -34,7 +35,6 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-      {/* Background glow effects */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
 
@@ -45,7 +45,6 @@ const Auth = () => {
         className="w-full max-w-md mx-4"
       >
         <div className="glass-card p-8 space-y-8">
-          {/* Logo */}
           <div className="text-center space-y-3">
             <motion.div
               initial={{ scale: 0 }}
@@ -56,17 +55,16 @@ const Auth = () => {
               <Dumbbell className="w-8 h-8 text-primary" />
             </motion.div>
             <h1 className="text-3xl font-bold font-display text-gradient">AthletePro</h1>
-            <p className="text-muted-foreground text-sm">Платформа управління тренуваннями</p>
+            <p className="text-muted-foreground text-sm">{t("platform")}</p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="coach@athletepro.com"
+                placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-secondary/50 border-border/50 h-12 focus:border-primary/50 transition-colors"
@@ -74,7 +72,7 @@ const Auth = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm text-muted-foreground">Пароль</Label>
+              <Label htmlFor="password" className="text-sm text-muted-foreground">{t("password")}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -106,14 +104,12 @@ const Auth = () => {
                   className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full"
                 />
               ) : (
-                "Увійти як тренер"
+                t("loginButton")
               )}
             </Button>
           </form>
 
-          <p className="text-center text-xs text-muted-foreground">
-            Демо: введіть будь-які дані для входу
-          </p>
+          <p className="text-center text-xs text-muted-foreground">{t("demo")}</p>
         </div>
       </motion.div>
     </div>

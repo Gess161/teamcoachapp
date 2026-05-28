@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { History as HistoryIcon } from "lucide-react";
 import DashboardLayout from "@/shared/ui/DashboardLayout";
@@ -16,6 +17,7 @@ type AthleteDoc = {
 };
 
 const HistoryPage = () => {
+  const { t } = useTranslation(["history", "enums"]);
   const trainings = useQuery(api.trainings.getAll) ?? [];
   const athletes = useQuery(api.athletes.getAll) ?? [];
   const activeMacro = useQuery(api.macrocycles.getActive) ?? null;
@@ -44,23 +46,28 @@ const HistoryPage = () => {
   const completed = useMemo(
     () =>
       [...trainings]
-        .filter((t) => t.status === "completed")
+        .filter((tr) => tr.status === "completed")
         .sort((a, b) => b.date.localeCompare(a.date)),
-    [trainings],
+    [trainings]
   );
+
+  const tableHeaders = [
+    t("table.training"),
+    t("table.date"),
+    t("table.prepType"),
+    t("table.load"),
+    t("table.athletes"),
+    t("table.duration"),
+    t("table.status"),
+  ];
 
   return (
     <DashboardLayout>
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-6"
-      >
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
         <div>
-          <h1 className="text-3xl font-display font-bold">Історія тренувань</h1>
+          <h1 className="text-3xl font-display font-bold">{t("title")}</h1>
           <p className="text-muted-foreground mt-1">
-            {completed.length} записів · Клікніть назву тренування → аналіз типу підготовки ·
-            Клікніть → щоб розгорнути учасників
+            {t("subtitle", { count: completed.length })}
           </p>
         </div>
 
@@ -68,9 +75,9 @@ const HistoryPage = () => {
           <div className="flex items-center gap-2 text-sm px-1">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <span className="text-muted-foreground">
-              Поточна фаза:{" "}
+              {t("currentPhase")}{" "}
               <span className="text-foreground font-medium">
-                {PHASE_NAMES[activeMacroPhase]}
+                {t(`enums:phaseName.${activeMacroPhase}`, PHASE_NAMES[activeMacroPhase])}
               </span>
             </span>
           </div>
@@ -79,10 +86,8 @@ const HistoryPage = () => {
         {completed.length === 0 ? (
           <div className="glass-card p-12 text-center">
             <HistoryIcon className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground">Завершених тренувань ще немає</p>
-            <p className="text-sm text-muted-foreground/60 mt-1">
-              Змініть статус тренування на «Завершено» у розділі Тренування
-            </p>
+            <p className="text-muted-foreground">{t("noCompleted")}</p>
+            <p className="text-sm text-muted-foreground/60 mt-1">{t("noCompletedHint")}</p>
           </div>
         ) : (
           <div className="glass-card overflow-hidden">
@@ -90,23 +95,18 @@ const HistoryPage = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border/50">
-                    {["Тренування", "Дата", "Вид підготовки", "Навантаження", "Спортсмени", "Тривалість", "Статус"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-5 py-4"
-                        >
-                          {h}
-                        </th>
-                      ),
-                    )}
+                    {tableHeaders.map((h) => (
+                      <th key={h} className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-5 py-4">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {completed.map((t, i) => (
+                  {completed.map((tr, i) => (
                     <TrainingHistoryRow
-                      key={t._id}
-                      training={t}
+                      key={tr._id}
+                      training={tr}
                       athleteMap={athleteMap}
                       activeMacroPhase={activeMacroPhase}
                       index={i}

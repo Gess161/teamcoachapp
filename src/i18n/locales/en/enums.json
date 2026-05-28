@@ -1,0 +1,86 @@
+{
+  "trainingType": {
+    "strength": "Strength",
+    "speed": "Speed",
+    "endurance": "Endurance",
+    "technique": "Technique",
+    "recovery": "Recovery",
+    "mixed": "Mixed",
+    "tactical": "Tactical",
+    "competition": "Competition"
+  },
+  "status": {
+    "planned": "Planned",
+    "in_progress": "In Progress",
+    "completed": "Completed"
+  },
+  "prepType": {
+    "ЗФП": "GPP",
+    "СФП": "SPP",
+    "Технічна": "Technical",
+    "Тактична": "Tactical",
+    "Психологічна": "Psychological",
+    "Теоретична": "Theoretical",
+    "Змішана": "Mixed"
+  },
+  "prepTypeFull": {
+    "ЗФП": "General Physical Preparation",
+    "СФП": "Special Physical Preparation",
+    "Технічна": "Technical preparation",
+    "Тактична": "Tactical preparation",
+    "Психологічна": "Psychological preparation",
+    "Теоретична": "Theoretical preparation",
+    "Змішана": "Mixed preparation"
+  },
+  "loadLevel": {
+    "В": "Large (L)",
+    "ЗН": "Significant (S)",
+    "С": "Medium (M)",
+    "М": "Small (Sm)"
+  },
+  "cyclePhase": {
+    "preparatory_general": "Gen. Prep.",
+    "preparatory_special": "Spec. Prep.",
+    "pre_competitive": "Pre-Competition",
+    "competitive": "Competitive",
+    "restorative": "Recovery",
+    "transitional": "Transitional"
+  },
+  "cyclePhaseForm": {
+    "preparatory_general": "General preparatory",
+    "preparatory_special": "Special preparatory",
+    "pre_competitive": "Pre-competitive",
+    "competitive": "Competitive",
+    "restorative": "Restorative",
+    "transitional": "Transitional"
+  },
+  "phaseName": {
+    "preparatory_general": "Preparatory I (GPP)",
+    "preparatory_special": "Preparatory II (SPP)",
+    "competitive": "Competitive",
+    "transitional": "Transitional"
+  },
+  "preparedness": {
+    "groups": {
+      "Основні": "Core",
+      "Розширені": "Extended",
+      "Додаткові": "Additional"
+    },
+    "physical": { "label": "Physical", "description": "Level of physical quality development (strength, endurance, speed, flexibility, coordination)", "source": "DYUSS Tests" },
+    "technical": { "label": "Technical", "description": "Level of technical mastery, accuracy in game actions", "source": "Coach assessment" },
+    "tactical": { "label": "Tactical", "description": "Ability to solve game situations, read the game", "source": "Coach assessment" },
+    "psychological": { "label": "Psychological", "description": "Willpower, stress resistance, motivation, concentration", "source": "Coach assessment" },
+    "theoretical": { "label": "Theoretical", "description": "Knowledge of rules, tactical schemes, training theory", "source": "Theory test" },
+    "functional": { "label": "Functional", "description": "State of cardiovascular, respiratory systems; HR, VO2max", "source": "Functional tests" },
+    "psychophysio": { "label": "Psychophysiological", "description": "Reaction speed, attention, sensorimotor coordination", "source": "Coach assessment" },
+    "cognitive": { "label": "Cognitive", "description": "Operational thinking, memory, decision-making under pressure", "source": "Coach assessment" },
+    "morphofunc": { "label": "Morphofunctional", "description": "Anthropometry: height, weight, arm span, body composition", "source": "Anthropometry" },
+    "recovery": { "label": "Recovery", "description": "Ability to recover after loads, adaptation reserve", "source": "Coach assessment" },
+    "coordination": { "label": "Coordination", "description": "Special movement coordination: balance, rhythm, differentiation", "source": "DYUSS Tests" },
+    "integral": { "label": "Integral", "description": "Generalized result of all component interactions. IGS = 0.4·P + 0.25·T + 0.2·Tac + 0.15·Ps", "source": "Auto: IGS" }
+  },
+  "gender": {
+    "male": "♂",
+    "female": "♀"
+  }
+}

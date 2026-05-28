@@ -1,0 +1,84 @@
+{
+  "title": "Тренировки",
+  "subtitle": "Создавайте, оценивайте и проводите тренировки",
+  "newTraining": "Новая тренировка",
+  "allTrainings": "Все тренировки",
+  "details": "Детали тренировки",
+  "noTrainings": "Нет тренировок. Создайте первую!",
+  "selectTraining": "Выберите тренировку из списка",
+  "athleteRemoved": "Спортсмен удалён",
+  "started": "Тренировка начата!",
+  "completedToast": "Тренировка завершена! ✅",
+  "exercises": "упражнений",
+  "athletes": "спортсменов",
+  "criteria": "критерии",
+  "rest": "отдых",
+  "form": {
+    "new": "Новая тренировка",
+    "edit": "Редактирование тренировки",
+    "name": "Название",
+    "namePlaceholder": "Силовая тренировка",
+    "type": "Тип",
+    "load": "Нагрузка",
+    "prepType": "Вид подготовки (Платонов)",
+    "date": "Дата",
+    "time": "Время (необязательно)",
+    "description": "Описание",
+    "descriptionPlaceholder": "Описание тренировки...",
+    "created": "Тренировка создана",
+    "updated": "Тренировка обновлена"
+  },
+  "card": {
+    "start": "Начать",
+    "complete": "Завершить"
+  },
+  "detail": {
+    "participants": "Участники ({{count}})",
+    "noParticipants": "Спортсмены не добавлены",
+    "criteria": "Критерии оценки",
+    "noCriteria": "Критерии не заданы",
+    "exerciseCriteria": "Критерии упражнения",
+    "noCriterionForExercise": "Без критериев",
+    "addExercise": "Добавить упражнение",
+    "unknown": "Неизвестно",
+    "criterion": "Критерий"
+  },
+  "athletesSelector": {
+    "title": "Добавить спортсменов",
+    "notFound": "Спортсмены не найдены",
+    "added": "Спортсмен добавлен к тренировке",
+    "removed": "Спортсмен удалён"
+  },
+  "criteriaManager": {
+    "title": "Новый критерий",
+    "forExercise": "Критерий для конкретного упражнения",
+    "global": "Общий критерий тренировки",
+    "name": "Название критерия",
+    "namePlaceholder": "Техника выполнения",
+    "description": "Описание",
+    "descriptionPlaceholder": "Что именно оценивается...",
+    "scale": "Шкала",
+    "weight": "Вес (1-5)",
+    "added": "Критерий добавлен",
+    "addButton": "Добавить критерий"
+  },
+  "exerciseManager": {
+    "title": "Тесты ДЮСШ",
+    "selectTest": "Выберите тест чтобы добавить как упражнение:",
+    "noTests": "Тесты не найдены",
+    "addManual": "Или добавить вручную:",
+    "namePlaceholder": "Название",
+    "descPlaceholder": "Описание",
+    "setsPlaceholder": "Подходы",
+    "repsPlaceholder": "Повторения/дистанция",
+    "restPlaceholder": "Отдых (сек)",
+    "addManualBtn": "Добавить упражнение вручную",
+    "added": "Упражнение добавлено"
+  },
+  "scaleOptions": {
+    "passFail": "зачёт/незачёт",
+    "time": "время (с)",
+    "distance": "дистанция (м)",
+    "weight": "вес (кг)"
+  }
+}

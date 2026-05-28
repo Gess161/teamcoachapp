@@ -1,0 +1,63 @@
+{
+  "title": "Statistics",
+  "subtitle": "Training process analysis",
+  "assess": "Assess readiness",
+  "loading": "Loading...",
+  "summary": {
+    "athletes": "Athletes",
+    "completed": "Completed",
+    "planned": "Planned",
+    "exercises": "Total exercises"
+  },
+  "charts": {
+    "volume": "Training volume (6 mo.)",
+    "qualities": "5 physical qualities",
+    "qualitiesHint": "Emphasis of completed trainings by preparation type",
+    "prepType": "Preparation type",
+    "noPrepType": "No trainings with specified preparation type",
+    "loadDistribution": "Load levels (Platonov)",
+    "noLoad": "No trainings with specified load level",
+    "trainings": "Trainings",
+    "emphasis": "Emphasis"
+  },
+  "readiness": {
+    "title": "IGS — Athlete Readiness Index",
+    "teamAverage": "Team average IGS",
+    "igsTeam": "(Team average)",
+    "igsIndividual": "(Readiness index)",
+    "teamLevel": "Average level of {{count}} athletes",
+    "noData": "No data for the selected athlete",
+    "noScores": "No readiness assessments yet",
+    "noScoresHint": "Add an assessment to see IGS and readiness radar",
+    "addScore": "Add assessment",
+    "readiness": "Readiness",
+    "excellent": "Excellent competition readiness",
+    "good": "Good readiness",
+    "satisfactory": "Satisfactory readiness",
+    "needsWork": "Needs preparation"
+  },
+  "preparednessGrid": {
+    "title": "12 types of readiness (Platonov)"
+  },
+  "readinessModal": {
+    "title": "Readiness assessment",
+    "subtitle": "Enter scores from 0 to 100",
+    "athlete": "Athlete",
+    "date": "Assessment date",
+    "basicComponents": "Core components (for IGS)",
+    "extraComponents": "Additional components",
+    "igsAuto": "IGS (auto) = {{value}}/100",
+    "coachNotes": "Coach notes",
+    "coachNotesPlaceholder": "Observations...",
+    "excellent": "Excellent readiness",
+    "good": "Good readiness",
+    "satisfactory": "Satisfactory",
+    "needsWork": "Needs work"
+  },
+  "igs": {
+    "physical": "Physical (40%)",
+    "technical": "Technical (25%)",
+    "tactical": "Tactical (20%)",
+    "psychological": "Psychological (15%)"
+  }
+}

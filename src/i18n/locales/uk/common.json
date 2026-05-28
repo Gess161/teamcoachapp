@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "dashboard": "Дашборд",
+    "team": "Команда",
+    "training": "Тренування",
+    "tests": "Тести ДЮСШ",
+    "history": "Історія",
+    "calendar": "Календар",
+    "statistics": "Статистика",
+    "learn": "Навчання",
+    "logout": "Вийти"
+  },
+  "sidebar": {
+    "appName": "AthletePro",
+    "coachPanel": "Панель тренера"
+  },
+  "actions": {
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "close": "Закрити",
+    "add": "Додати",
+    "edit": "Редагувати",
+    "delete": "Видалити",
+    "done": "Готово",
+    "create": "Створити",
+    "update": "Оновити",
+    "loading": "Завантаження...",
+    "saving": "Збереження...",
+    "back": "← До списку",
+    "clear": "Очистити"
+  },
+  "language": {
+    "label": "Мова",
+    "en": "EN",
+    "uk": "UA",
+    "ru": "RU"
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "title": "Learn",
+  "subtitle": "App tips and sports training theory",
+  "tabs": {
+    "hints": "How to use",
+    "theory": "Theory (Platonov)"
+  },
+  "theorySource": "Source: Platonov V.N. (2004)",
+  "theorySourceText": "\"The System of Athlete Preparation in Olympic Sport\" — the main methodological basis of this application. All formulas and classifications are based on this monograph.",
+  "sections": {
+    "periodization": {
+      "title": "Annual Macrocycle",
+      "content": [
+        { "heading": "What is a macrocycle?", "text": "A macrocycle is the annual preparation cycle of an athlete, covering all stages from preparatory to transitional. It is structured so that peak form coincides with the main competitions of the season." },
+        { "heading": "Preparatory period (GPP → SPP)", "text": "Takes ~55–65% of the annual time. Begins with general physical preparation (GPP) — broad base of endurance, strength, flexibility. Then transitions to special physical preparation (SPP) — exercises maximally similar to competition movements." },
+        { "heading": "Competitive period", "text": "~30–40% of time. Training volume decreases, intensity increases. The goal is to maintain acquired form and realize it in competitions. Tactical and technical preparation predominate." },
+        { "heading": "Transitional period", "text": "~5–10% of time. Active rest, recovery, injury prevention. Minimal specific load, but complete cessation of training is harmful — maintenance training 2–3 times per week." }
+      ]
+    },
+    "mesocycles": {
+      "title": "Mesocycles (2–4 weeks)",
+      "content": [
+        { "heading": "Shock mesocycle", "text": "The main development block. Load gradually increases week by week (wave progression). Ends with a \"shock\" week of maximum volume, followed by a recovery mesocycle." },
+        { "heading": "Recovery mesocycle", "text": "Volume decreases 30–50% compared to the previous one. Important for supercompensation — this is when true form improvement occurs. Don't skip recovery microcycles!" },
+        { "heading": "Competition mesocycle", "text": "Structure subordinated to the competition calendar. Typically: taper week → competition → recovery. High intensity, low volume." },
+        { "heading": "Pre-competition mesocycle", "text": "Simulating competition conditions, tactical drilling. Remaining technical errors are corrected. Psychological preparation becomes key." },
+        { "heading": "Stabilizing mesocycle", "text": "Consolidating acquired skills without increasing load. Used during extended competitive seasons between competition series." }
+      ]
+    },
+    "load": {
+      "title": "Load levels",
+      "content": [
+        { "heading": "Classification by Platonov", "text": "V.N. Platonov identified 4 load levels by degree of impact on the body: Large (L), Significant (S), Medium (M), Small (Sm). Each has a coefficient for calculating the Training Load Index (TLI)." },
+        { "heading": "L — Large loads (k=1.00)", "text": "HR 170–180+ bpm. Complete depletion of energy resources. Recovery 48–72 hrs. No more than 2 times per week in preparatory, 1 time — in competitive period." },
+        { "heading": "S — Significant loads (k=0.75)", "text": "HR 155–170 bpm. Substantial but not complete depletion. Recovery 24–48 hrs. The main load type in most training sessions." },
+        { "heading": "M — Medium loads (k=0.50)", "text": "HR 140–155 bpm. Moderate fatigue. Recovery 12–24 hrs. Technical and tactical training, recovery sessions." },
+        { "heading": "Sm — Small loads (k=0.25)", "text": "HR up to 140 bpm. Minimal fatigue. Recovery up to 12 hrs. Warm-ups, stretching, light coordination exercises." }
+      ]
+    },
+    "qualities": {
+      "title": "5 physical qualities",
+      "content": [
+        { "heading": "Speed", "text": "The ability to perform a movement or cover a distance in minimum time. Developed primarily in the preparatory (SPP) and pre-competition periods. Exercises: sprint 10–30 m, reaction, acceleration." },
+        { "heading": "Strength", "text": "The ability to overcome external resistance or counteract it. Basic strength (GPP) → special strength (SPP) → realization strength (competitive). Handball: throws, duels, jumps." },
+        { "heading": "Endurance", "text": "The ability to sustain a given intensity for a long time. General endurance — base (GPP). Special endurance — 1000–1500 m running, cross-country. Key for the second half of a game." },
+        { "heading": "Flexibility", "text": "Range of motion in joints. Active and passive flexibility. Forward bend, splits. Especially important for goalkeepers. Developed in every training session (warm-up/cool-down)." },
+        { "heading": "Coordination", "text": "The ability to precisely control movements in space and time. Includes: balance, rhythm, effort differentiation, orientation. Developed through technical and tactical exercises, games." }
+      ]
+    },
+    "itn": {
+      "title": "Training Load Index (TLI)",
+      "content": [
+        { "heading": "TLI formula", "text": "TLI = Σ (number of exercises × load coefficient × criterion weight). Reflects the total \"training effect\" of the session across all exercises and assessment criteria." },
+        { "heading": "TLI interpretation", "text": "0–25: small load (Sm). 25–50: medium (M). 50–75: significant (S). 75–100: large (L). Optimal TLI depends on the preparation stage and individual athlete characteristics." },
+        { "heading": "Athlete Readiness Index (IGS)", "text": "IGS = 0.4×Physical + 0.25×Technical + 0.2×Tactical + 0.15×Psychological. An integral readiness indicator by Platonov. Value 70–85 — optimal competition readiness." },
+        { "heading": "Stability Coefficient (SC)", "text": "SC = (1 – σ/μ) × 100%, where σ is the standard deviation of results, μ is the mean. Shows performance consistency. SC > 75% — high stability, acceptable for competition." }
+      ]
+    },
+    "calendar": {
+      "title": "Training calendar",
+      "content": [
+        { "heading": "What is the calendar?", "text": "The calendar is a visual planner for all scheduled training sessions. It allows you to see the entire monthly schedule, track how many athletes participate in each session, and quickly review relevant information." },
+        { "heading": "How to access the calendar?", "text": "Click \"Calendar\" in the main menu. You'll see the current month's calendar with markers on days that have scheduled trainings (blue dot)." },
+        { "heading": "Month navigation", "text": "Use the ← → arrows at the top of the calendar to navigate to the previous or next month. The calendar automatically calculates the weekday layout for each month." },
+        { "heading": "Date selection and viewing trainings", "text": "Click any date in the calendar. A list of trainings for that day will appear on the right: name, time, and number of participants. The selected date will be highlighted in blue." },
+        { "heading": "Data source", "text": "Calendar data syncs with trainings from the Training page. All trainings created with a date and time automatically appear in the corresponding calendar cells." },
+        { "heading": "Displayed information", "text": "For each training, the calendar shows: name (e.g., \"Strength training\"), time (e.g., \"10:00\"), number of participating athletes. This allows the coach to quickly assess the day's workload." }
+      ]
+    }
+  },
+  "appHints": {
+    "team": {
+      "title": "Team",
+      "hints": [
+        "Click an athlete's card — a full profile will open.",
+        "Click the current phase icon (e.g. \"Gen. Prep.\") on the card — see today's training with a personal adjustment field.",
+        "\"Macrocycle\" tab → create an annual plan. Phase dates are calculated automatically but can be changed manually.",
+        "Link athletes to the macrocycle — a colored bar with a \"today\" marker will appear on their cards."
+      ]
+    },
+    "training": {
+      "title": "Training",
+      "hints": [
+        "When creating training, specify the Preparation type (GPP/SPP/Technical...) and Load level (L/S/M/Sm) — this data goes into statistics.",
+        "Add athletes via the \"Participants\" field — this enables tracking adjustments for each.",
+        "Trainings with \"Planned\" status appear on the dashboard as \"Upcoming\".",
+        "Change status to \"Completed\" — the training moves to History."
+      ]
+    },
+    "tests": {
+      "title": "DYUSS Tests",
+      "hints": [
+        "Select an athlete on the left — all DYUSS tests with latest results appear on the right.",
+        "The physical quality filter helps quickly find the needed test.",
+        "Click a test card — a dynamics chart + full measurement table opens.",
+        "The standard is calculated automatically when saving a result (age + athlete's gender).",
+        "At least 2 measurements are needed to display the dynamics chart."
+      ]
+    },
+    "statistics": {
+      "title": "Statistics",
+      "hints": [
+        "The \"5 physical qualities\" radar is built automatically from completed trainings by preparation type.",
+        "Click \"Assess readiness\" → enter 0–100 scores by component → IGS is calculated automatically.",
+        "The more trainings with specified preparation type and load — the more accurate the statistics.",
+        "IGS 70–85: optimal competition readiness by Platonov."
+      ]
+    },
+    "history": {
+      "title": "History",
+      "hints": [
+        "Click a training name — a preparation type analysis by Platonov opens with recommended percentages for the current phase.",
+        "You can immediately change the preparation type directly from History.",
+        "Click the arrow next to the name — the participants list expands.",
+        "Click an athlete's name in the expanded row — their profile opens."
+      ]
+    },
+    "tips": {
+      "title": "Useful tips",
+      "hints": [
+        "Personal adjustments (Team → athlete → \"Today's training\") are saved separately for each — even if the general plan changed.",
+        "Mobile version: the sidebar is hidden — use the burger menu (if connected).",
+        "All data is stored in Convex — real-time, sync across devices.",
+        "If a DYUSS test shows \"Below standard\" — it's a signal to pay more attention to the corresponding physical quality in the current mesocycle."
+      ]
+    },
+    "calendar": {
+      "title": "Calendar",
+      "hints": [
+        "The calendar automatically syncs with trainings from the Training page.",
+        "Days with trainings are marked with a blue dot. Click a date — a list of all trainings for that day appears on the right.",
+        "For each training, the calendar shows time (if specified) and number of participants — helping quickly assess the day's workload.",
+        "Navigate months with ← → arrows. The calendar correctly calculates the first day of the week for each month.",
+        "If no time is specified when creating a training, the calendar shows \"09:00\" as the default time."
+      ]
+    }
+  }
+}
