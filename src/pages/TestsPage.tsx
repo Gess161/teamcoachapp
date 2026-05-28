@@ -17,11 +17,13 @@ const NORM_LEVEL_STYLES: Record<string, string> = {
 
 const TestsPage = () => {
   const { t } = useTranslation("tests");
+  const { t: tEnum } = useTranslation("enums");
   const athletes = useQuery(api.athletes.getAll) ?? [];
   const tests = useQuery(api.dyushTests.getAll, {}) ?? [];
 
   const [selectedAthleteId, setSelectedAthleteId] = useState<Id<"athletes"> | null>(null);
   const [selectedTestId, setSelectedTestId] = useState<Id<"dyush_tests"> | null>(null);
+  const [sportFilter, setSportFilter] = useState<string>("all");
   const [qualityFilter, setQualityFilter] = useState<string>("all");
 
   const latestResults =
@@ -36,13 +38,20 @@ const TestsPage = () => {
     return map;
   }, [latestResults]);
 
+  const availableSports = useMemo(
+    () => [...new Set(tests.map((t) => t.sport))].sort(),
+    [tests]
+  );
+
   const qualityKeys = ["speed", "strength", "endurance", "flexibility", "coordination"] as const;
   const qualities = ["all", ...qualityKeys];
 
-  const filteredTests = useMemo(
-    () => qualityFilter === "all" ? tests : tests.filter((test) => test.physicalQuality === qualityFilter),
-    [tests, qualityFilter]
-  );
+  const filteredTests = useMemo(() => {
+    let result = tests;
+    if (sportFilter !== "all") result = result.filter((test) => test.sport === sportFilter);
+    if (qualityFilter !== "all") result = result.filter((test) => test.physicalQuality === qualityFilter);
+    return result;
+  }, [tests, sportFilter, qualityFilter]);
 
   const selectedAthlete = athletes.find((a) => a._id === selectedAthleteId);
   const selectedTest = tests.find((test) => test._id === selectedTestId);
@@ -52,7 +61,7 @@ const TestsPage = () => {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
         <div>
           <h1 className="text-3xl font-display font-bold">{t("title")}</h1>
-          <p className="text-muted-foreground mt-1">{t("subtitle", { count: tests.length })}</p>
+          <p className="text-muted-foreground mt-1">{t("subtitle", { count: filteredTests.length })}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -124,6 +133,23 @@ const TestsPage = () => {
                   </>
                 ) : (
                   <>
+                    {availableSports.length > 1 && (
+                      <div className="flex gap-1 flex-wrap">
+                        {["all", ...availableSports].map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => { setSportFilter(s); setQualityFilter("all"); }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                              sportFilter === s
+                                ? "bg-primary/20 text-primary border border-primary/40"
+                                : "bg-secondary/50 text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {s === "all" ? t("all") : tEnum(`sport.${s}`, s)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex gap-1 flex-wrap">
                       {qualities.map((q) => (
                         <button

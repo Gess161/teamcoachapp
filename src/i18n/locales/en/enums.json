@@ -82,5 +82,9 @@
   "gender": {
     "male": "♂",
     "female": "♀"
+  },
+  "sport": {
+    "handball": "Handball",
+    "football": "Football"
   }
 }
