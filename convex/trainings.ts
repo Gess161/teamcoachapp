@@ -1,5 +1,7 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, QueryCtx, MutationCtx } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+import { requireCoach } from "./coaches";
 
 const exerciseCriterionValidator = v.object({
   id: v.string(),
@@ -19,28 +21,48 @@ const exerciseValidator = v.object({
   criteria: v.array(exerciseCriterionValidator),
 });
 
+async function assertOwnsTraining(
+  ctx: QueryCtx | MutationCtx,
+  id: Id<"trainings">,
+  coachId: Id<"coaches">,
+) {
+  const training = await ctx.db.get(id);
+  if (!training || training.coachId !== coachId) {
+    throw new Error("Training not found");
+  }
+  return training;
+}
+
 // ─── Queries ────────────────────────────────────────────────────────────────
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("trainings").order("desc").collect();
+    const coach = await requireCoach(ctx);
+    return await ctx.db
+      .query("trainings")
+      .withIndex("by_coach", (q) => q.eq("coachId", coach._id))
+      .order("desc")
+      .collect();
   },
 });
 
 export const getById = query({
   args: { id: v.id("trainings") },
   handler: async (ctx, { id }) => {
-    return await ctx.db.get(id);
+    const coach = await requireCoach(ctx);
+    return await assertOwnsTraining(ctx, id, coach._id);
   },
 });
 
 export const getByDate = query({
   args: { date: v.string() },
   handler: async (ctx, { date }) => {
+    const coach = await requireCoach(ctx);
     return await ctx.db
       .query("trainings")
       .withIndex("by_date", (q) => q.eq("date", date))
+      .filter((q) => q.eq(q.field("coachId"), coach._id))
       .collect();
   },
 });
@@ -54,9 +76,11 @@ export const getByStatus = query({
     ),
   },
   handler: async (ctx, { status }) => {
+    const coach = await requireCoach(ctx);
     return await ctx.db
       .query("trainings")
       .withIndex("by_status", (q) => q.eq("status", status))
+      .filter((q) => q.eq(q.field("coachId"), coach._id))
       .order("desc")
       .collect();
   },
@@ -65,7 +89,12 @@ export const getByStatus = query({
 export const getByAthlete = query({
   args: { athleteId: v.id("athletes") },
   handler: async (ctx, { athleteId }) => {
-    const all = await ctx.db.query("trainings").order("desc").collect();
+    const coach = await requireCoach(ctx);
+    const all = await ctx.db
+      .query("trainings")
+      .withIndex("by_coach", (q) => q.eq("coachId", coach._id))
+      .order("desc")
+      .collect();
     return all.filter((t) => t.athleteIds.includes(athleteId));
   },
 });
@@ -73,10 +102,12 @@ export const getByAthlete = query({
 export const getUpcoming = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, { limit }) => {
+    const coach = await requireCoach(ctx);
     const today = new Date().toISOString().split("T")[0];
     const all = await ctx.db
       .query("trainings")
       .withIndex("by_status", (q) => q.eq("status", "planned"))
+      .filter((q) => q.eq(q.field("coachId"), coach._id))
       .collect();
     const upcoming = all.filter((t) => t.date >= today);
     upcoming.sort((a, b) => a.date.localeCompare(b.date));
@@ -121,11 +152,12 @@ export const create = mutation({
     athleteIds: v.array(v.id("athletes")),
     mesocycleId: v.optional(v.id("mesocycles")),
     durationMinutes: v.optional(v.number()),
-    coachId: v.optional(v.id("coaches")),
   },
   handler: async (ctx, args) => {
+    const coach = await requireCoach(ctx);
     return await ctx.db.insert("trainings", {
       ...args,
+      coachId: coach._id,
       status: "planned",
     });
   },
@@ -177,6 +209,8 @@ export const update = mutation({
     durationMinutes: v.optional(v.number()),
   },
   handler: async (ctx, { id, ...fields }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsTraining(ctx, id, coach._id);
     await ctx.db.patch(id, fields);
   },
 });
@@ -191,6 +225,8 @@ export const updateStatus = mutation({
     ),
   },
   handler: async (ctx, { id, status }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsTraining(ctx, id, coach._id);
     await ctx.db.patch(id, { status });
   },
 });
@@ -198,6 +234,8 @@ export const updateStatus = mutation({
 export const remove = mutation({
   args: { id: v.id("trainings") },
   handler: async (ctx, { id }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsTraining(ctx, id, coach._id);
     await ctx.db.delete(id);
   },
 });

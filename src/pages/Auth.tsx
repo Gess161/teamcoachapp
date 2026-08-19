@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Dumbbell, Eye, EyeOff } from "lucide-react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,21 +17,26 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn } = useAuthActions();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    setTimeout(() => {
-      if (email && password) {
-        localStorage.setItem("coach_auth", "true");
-        toast({ title: t("loginSuccess"), description: t("welcome") });
-        navigate("/dashboard");
-      } else {
-        toast({ title: t("error"), description: t("fillAllFields"), variant: "destructive" });
-      }
+    if (!email || !password) {
+      toast({ title: t("error"), description: t("fillAllFields"), variant: "destructive" });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await signIn("password", { email, password, flow: "signIn" });
+      toast({ title: t("loginSuccess"), description: t("welcome") });
+      navigate("/dashboard");
+    } catch {
+      toast({ title: t("error"), description: t("invalidCredentials"), variant: "destructive" });
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -108,8 +114,6 @@ const Auth = () => {
               )}
             </Button>
           </form>
-
-          <p className="text-center text-xs text-muted-foreground">{t("demo")}</p>
         </div>
       </motion.div>
     </div>

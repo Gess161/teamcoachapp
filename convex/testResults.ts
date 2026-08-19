@@ -1,11 +1,14 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireCoach, assertOwnsAthlete } from "./coaches";
 
 // ─── Queries ────────────────────────────────────────────────────────────────
 
 export const getByAthlete = query({
   args: { athleteId: v.id("athletes") },
   handler: async (ctx, { athleteId }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsAthlete(ctx, athleteId, coach._id);
     return await ctx.db
       .query("test_results")
       .withIndex("by_athlete", (q) => q.eq("athleteId", athleteId))
@@ -20,6 +23,8 @@ export const getByAthleteAndTest = query({
     testId: v.id("dyush_tests"),
   },
   handler: async (ctx, { athleteId, testId }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsAthlete(ctx, athleteId, coach._id);
     return await ctx.db
       .query("test_results")
       .withIndex("by_athlete_test", (q) =>
@@ -33,6 +38,8 @@ export const getByAthleteAndTest = query({
 export const getLatestByAthlete = query({
   args: { athleteId: v.id("athletes") },
   handler: async (ctx, { athleteId }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsAthlete(ctx, athleteId, coach._id);
     // Повертає останній результат по кожному тесту
     const all = await ctx.db
       .query("test_results")
@@ -63,15 +70,17 @@ export const create = mutation({
     testingContext: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Завантажуємо тест і спортсмена для розрахунку нормативу
+    const coach = await requireCoach(ctx);
+    const athlete = await assertOwnsAthlete(ctx, args.athleteId, coach._id);
+
+    // Завантажуємо тест для розрахунку нормативу
     const test = await ctx.db.get(args.testId);
-    const athlete = await ctx.db.get(args.athleteId);
 
     let normLevel: "excellent" | "good" | "satisfactory" | "below_norm" =
       "below_norm";
     let normPercent: number | undefined;
 
-    if (test && athlete) {
+    if (test) {
       // Визначаємо вікову групу
       const birthYear = new Date(athlete.dateOfBirth).getFullYear();
       const testYear = new Date(args.date).getFullYear();
@@ -115,6 +124,10 @@ export const create = mutation({
 export const remove = mutation({
   args: { id: v.id("test_results") },
   handler: async (ctx, { id }) => {
+    const coach = await requireCoach(ctx);
+    const result = await ctx.db.get(id);
+    if (!result) throw new Error("Test result not found");
+    await assertOwnsAthlete(ctx, result.athleteId, coach._id);
     await ctx.db.delete(id);
   },
 });

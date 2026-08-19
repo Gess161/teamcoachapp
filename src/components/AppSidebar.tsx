@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useAuthActions } from "@convex-dev/auth/react";
 import {
   Users, Dumbbell, History, CalendarDays, BarChart3,
   LogOut, LayoutDashboard, ClipboardCheck, BookOpen,
@@ -10,6 +11,7 @@ export function AppSidebar() {
   const { t } = useTranslation("common");
   const location = useLocation();
   const navigate = useNavigate();
+  const { signOut } = useAuthActions();
 
   const navItems = [
     { title: t("nav.dashboard"), url: "/dashboard", icon: LayoutDashboard },
@@ -23,7 +25,7 @@ export function AppSidebar() {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("coach_auth");
+    void signOut();
     navigate("/");
   };
 

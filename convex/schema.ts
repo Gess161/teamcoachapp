@@ -1,14 +1,20 @@
 import { defineSchema, defineTable } from "convex/server";
+import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  ...authTables,
+
   // ─── Тренери (auth) ───────────────────────────────────────────────────────
   coaches: defineTable({
+    userId: v.optional(v.id("users")), // зв'язок з обліковим записом Convex Auth
     name: v.string(),
     email: v.string(),
     sport: v.string(), // "handball", "football", etc.
     avatarUrl: v.optional(v.string()),
-  }).index("by_email", ["email"]),
+  })
+    .index("by_email", ["email"])
+    .index("by_userId", ["userId"]),
 
   // ─── Спортсмени ───────────────────────────────────────────────────────────
   athletes: defineTable({

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, HashRouter } from "react-router-dom";
+import { RequireAuth } from "./RequireAuth";
 import Auth from "../pages/Auth";
 import Dashboard from "../pages/Dashboard";
 import Team from "../pages/Team";
@@ -30,14 +31,14 @@ const App = () => (
         <HashRouter>
           <Routes>
             <Route path="/" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/team" element={<Team />} />
-            <Route path="/training" element={<TrainingPage />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/statistics" element={<Statistics />} />
-            <Route path="/tests" element={<TestsPage />} />
-            <Route path="/learn" element={<LearnPage />} />
+            <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+            <Route path="/team" element={<RequireAuth><Team /></RequireAuth>} />
+            <Route path="/training" element={<RequireAuth><TrainingPage /></RequireAuth>} />
+            <Route path="/history" element={<RequireAuth><History /></RequireAuth>} />
+            <Route path="/calendar" element={<RequireAuth><CalendarPage /></RequireAuth>} />
+            <Route path="/statistics" element={<RequireAuth><Statistics /></RequireAuth>} />
+            <Route path="/tests" element={<RequireAuth><TestsPage /></RequireAuth>} />
+            <Route path="/learn" element={<RequireAuth><LearnPage /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>

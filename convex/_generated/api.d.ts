@@ -9,9 +9,13 @@
  */
 
 import type * as athletes from "../athletes.js";
+import type * as auth from "../auth.js";
+import type * as coaches from "../coaches.js";
 import type * as dyushTests from "../dyushTests.js";
+import type * as http from "../http.js";
 import type * as macrocycles from "../macrocycles.js";
 import type * as readinessScores from "../readinessScores.js";
+import type * as seed from "../seed.js";
 import type * as testResults from "../testResults.js";
 import type * as trainingSessions from "../trainingSessions.js";
 import type * as trainings from "../trainings.js";
@@ -24,9 +28,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   athletes: typeof athletes;
+  auth: typeof auth;
+  coaches: typeof coaches;
   dyushTests: typeof dyushTests;
+  http: typeof http;
   macrocycles: typeof macrocycles;
   readinessScores: typeof readinessScores;
+  seed: typeof seed;
   testResults: typeof testResults;
   trainingSessions: typeof trainingSessions;
   trainings: typeof trainings;

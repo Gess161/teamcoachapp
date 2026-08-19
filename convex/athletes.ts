@@ -1,13 +1,16 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireCoach, assertOwnsAthlete } from "./coaches";
 
 // ─── Queries ────────────────────────────────────────────────────────────────
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
+    const coach = await requireCoach(ctx);
     return await ctx.db
       .query("athletes")
+      .withIndex("by_coach", (q) => q.eq("coachId", coach._id))
       .filter((q) => q.eq(q.field("isActive"), true))
       .order("asc")
       .collect();
@@ -17,17 +20,24 @@ export const getAll = query({
 export const getById = query({
   args: { id: v.id("athletes") },
   handler: async (ctx, { id }) => {
-    return await ctx.db.get(id);
+    const coach = await requireCoach(ctx);
+    return await assertOwnsAthlete(ctx, id, coach._id);
   },
 });
 
 export const getBySport = query({
   args: { sport: v.string() },
   handler: async (ctx, { sport }) => {
+    const coach = await requireCoach(ctx);
     return await ctx.db
       .query("athletes")
       .withIndex("by_sport", (q) => q.eq("sport", sport))
-      .filter((q) => q.eq(q.field("isActive"), true))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("isActive"), true),
+          q.eq(q.field("coachId"), coach._id),
+        ),
+      )
       .collect();
   },
 });
@@ -61,11 +71,12 @@ export const create = mutation({
     targetResult: v.optional(v.string()),
     injuryNotes: v.optional(v.string()),
     personalNotes: v.optional(v.string()),
-    coachId: v.optional(v.id("coaches")),
   },
   handler: async (ctx, args) => {
+    const coach = await requireCoach(ctx);
     return await ctx.db.insert("athletes", {
       ...args,
+      coachId: coach._id,
       isActive: true,
     });
   },
@@ -102,6 +113,8 @@ export const update = mutation({
     macroCycleId: v.optional(v.id("macrocycles")),
   },
   handler: async (ctx, { id, ...fields }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsAthlete(ctx, id, coach._id);
     await ctx.db.patch(id, fields);
   },
 });
@@ -109,6 +122,8 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("athletes") },
   handler: async (ctx, { id }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsAthlete(ctx, id, coach._id);
     // М'яке видалення — просто деактивуємо
     await ctx.db.patch(id, { isActive: false });
   },
@@ -120,6 +135,8 @@ export const updatePersonalNotes = mutation({
     personalNotes: v.string(),
   },
   handler: async (ctx, { id, personalNotes }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsAthlete(ctx, id, coach._id);
     await ctx.db.patch(id, { personalNotes });
   },
 });
@@ -138,6 +155,8 @@ export const updateCyclePhase = mutation({
     macroCycleId: v.optional(v.id("macrocycles")),
   },
   handler: async (ctx, { id, currentCyclePhase, macroCycleId }) => {
+    const coach = await requireCoach(ctx);
+    await assertOwnsAthlete(ctx, id, coach._id);
     await ctx.db.patch(id, { currentCyclePhase, macroCycleId });
   },
 });
