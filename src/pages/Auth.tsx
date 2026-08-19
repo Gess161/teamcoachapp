@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Dumbbell, Eye, EyeOff } from "lucide-react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { Dumbbell, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useAuthActions, useConvexAuth } from "@convex-dev/auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,20 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signIn } = useAuthActions();
+  const { isLoading: isAuthLoading, isAuthenticated } = useConvexAuth();
+
+  // Якщо сесія вже активна (токен збережено з минулого разу) — одразу в кабінет,
+  // без повторного показу форми логіну.
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

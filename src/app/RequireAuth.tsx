@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useConvexAuth } from "convex/react";
+import { useConvexAuth } from "@convex-dev/auth/react";
 import { Loader2 } from "lucide-react";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
